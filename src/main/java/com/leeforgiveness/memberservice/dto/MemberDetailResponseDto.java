@@ -1,6 +1,6 @@
-package com.leeforgiveness.memberservice.dto.response;
+package com.leeforgiveness.memberservice.dto;
 
-import com.leeforgiveness.memberservice.vo.response.MemberDetailResponseVo;
+import com.leeforgiveness.memberservice.vo.MemberDetailResponseVo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,11 +19,12 @@ public class MemberDetailResponseDto {
     private String phoneNum;
     private String resumeInfo;
     private String handle;
+    private String profileImage;
 
     public static MemberDetailResponseVo dtoToVo(MemberDetailResponseDto memberDetailResponseDto) {
         return new MemberDetailResponseVo(memberDetailResponseDto.getEmail(),
             memberDetailResponseDto.getName(),
             memberDetailResponseDto.getPhoneNum(), memberDetailResponseDto.getResumeInfo(),
-            memberDetailResponseDto.getHandle());
+            memberDetailResponseDto.getHandle(), memberDetailResponseDto.getProfileImage());
     }
 }

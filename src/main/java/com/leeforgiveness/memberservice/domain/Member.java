@@ -28,10 +28,12 @@ public class Member {
     private String handle;
     @Column(name = "termination_status", nullable = false)
     private boolean terminationStatus;
+    @Column(name = "profile_image")
+    private String profileImage;
 
     @Builder
     public Member(String email, String name, String phoneNum, String uuid, String resumeInfo,
-        String handle, boolean terminationStatus) {
+        String handle, boolean terminationStatus, String profileImage) {
         this.email = email;
         this.name = name;
         this.phoneNum = phoneNum;
@@ -39,6 +41,7 @@ public class Member {
         this.resumeInfo = resumeInfo;
         this.handle = handle;
         this.terminationStatus = terminationStatus;
+        this.profileImage = profileImage;
     }
 
     public Member(String uuid) {

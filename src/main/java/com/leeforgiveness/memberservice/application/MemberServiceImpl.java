@@ -1,8 +1,8 @@
 package com.leeforgiveness.memberservice.application;
 
 import com.leeforgiveness.memberservice.domain.Member;
-import com.leeforgiveness.memberservice.dto.request.MemberRequestDto;
-import com.leeforgiveness.memberservice.dto.response.MemberDetailResponseDto;
+import com.leeforgiveness.memberservice.dto.MemberUpdateRequestDto;
+import com.leeforgiveness.memberservice.dto.MemberDetailResponseDto;
 import com.leeforgiveness.memberservice.infrastructure.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +29,7 @@ public class MemberServiceImpl implements MemberService {
             .phoneNum(member.getPhoneNum())
             .resumeInfo(member.getResumeInfo())
             .handle(member.getHandle())
+            .profileImage(member.getProfileImage())
             .build();
     }
 
@@ -36,17 +37,18 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void updateMember(String memberUuid,
-        MemberRequestDto memberResumeInfoRequestDto) {
+        MemberUpdateRequestDto memberUpdateRequestDto) {
         Member member = memberRepository.findByUuid(memberUuid)
             .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
         memberRepository.save(Member.builder()
             .uuid(member.getUuid())
             .email(member.getEmail())
-            .name(member.getName())
-            .phoneNum(member.getPhoneNum())
-            .resumeInfo(memberResumeInfoRequestDto.getResumeInfo())
-            .handle(member.getHandle())
+            .name(memberUpdateRequestDto.getName())
+            .phoneNum(memberUpdateRequestDto.getPhoneNum())
+            .resumeInfo(memberUpdateRequestDto.getResumeInfo())
+            .handle(memberUpdateRequestDto.getHandle())
+            .profileImage(memberUpdateRequestDto.getProfileImage())
             .build()
         );
     }
@@ -66,6 +68,7 @@ public class MemberServiceImpl implements MemberService {
             .resumeInfo(member.getResumeInfo())
             .handle(member.getHandle())
             .terminationStatus(true)
+            .profileImage(member.getProfileImage())
             .build()
         );
     }
