@@ -9,6 +9,8 @@ public interface MemberService {
 
     void snsAddMember(SnsMemberAddRequestDto snsMemberAddRequestDto);
 
+    TokenResponseDto snsLogin(SnsMemberLoginRequestDto snsMemberLoginRequestDto);
+
     void duplicationEmail(String email);
 
     MemberDetailResponseDto findMember(String uuid);

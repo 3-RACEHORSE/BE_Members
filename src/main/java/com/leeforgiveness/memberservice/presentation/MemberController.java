@@ -1,6 +1,7 @@
 package com.leeforgiveness.memberservice.presentation;
 
 import com.leeforgiveness.memberservice.application.MemberService;
+import com.leeforgiveness.memberservice.dto.MemberDetailResponseDto;
 import com.leeforgiveness.memberservice.dto.SnsMemberAddRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,4 +20,9 @@ public class MemberController {
     public void snsAddMember(@RequestBody SnsMemberAddRequestDto snsMemberAddRequestDto) {
         memberService.snsAddMember(snsMemberAddRequestDto);
     }
+
+//    @GetMapping("/myprofile")
+//    public void memberDetail() {
+//        return MemberDetailResponseDto.dtoToVo(memberService.findMember("uuid"));
+//    }
 }

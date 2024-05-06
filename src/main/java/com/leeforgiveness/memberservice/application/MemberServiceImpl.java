@@ -23,6 +23,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final SnsInfoRepository snsInfoRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     //이메일 중복 확인
     @Override
@@ -68,6 +69,30 @@ public class MemberServiceImpl implements MemberService {
                 .build();
 
         snsInfoRepository.save(snsInfo);
+    }
+
+    //토큰 생성
+    private String createToken(Member member) {
+        return jwtTokenProvider.generateToken(member);
+    }
+
+    //소셜 로그인
+    @Override
+    @Transactional
+    public TokenResponseDto snsLogin(SnsMemberLoginRequestDto snsMemberLoginRequestDto) {
+        SnsInfo snsInfo = snsInfoRepository.findBySnsIdAndSnsType(snsMemberLoginRequestDto.getSnsId(), snsMemberLoginRequestDto.getSnsType())
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        Member member = memberRepository.findById(snsInfo.getMember().getId())
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        if (member.isTerminationStatus()) {
+            throw new IllegalArgumentException("탈퇴한 회원입니다.");
+        }
+
+        String token = createToken(member);
+
+        return TokenResponseDto.builder()
+                .token(token)
+                .build();
     }
 
     //회원정보 조회
