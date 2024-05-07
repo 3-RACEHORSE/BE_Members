@@ -1,14 +1,15 @@
 package com.leeforgiveness.memberservice.application;
 
+import com.leeforgiveness.memberservice.common.security.JwtTokenProvider;
 import com.leeforgiveness.memberservice.domain.Member;
 import com.leeforgiveness.memberservice.domain.SnsInfo;
-import com.leeforgiveness.memberservice.dto.MemberUpdateRequestDto;
-import com.leeforgiveness.memberservice.dto.MemberDetailResponseDto;
-import com.leeforgiveness.memberservice.dto.SnsMemberAddRequestDto;
+import com.leeforgiveness.memberservice.dto.*;
 import com.leeforgiveness.memberservice.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.infrastructure.SnsInfoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,7 +74,8 @@ public class MemberServiceImpl implements MemberService {
 
     //토큰 생성
     private String createToken(Member member) {
-        return jwtTokenProvider.generateToken(member);
+        UserDetails userDetails = User.withUsername(member.getEmail()).password(member.getUuid()).roles("USER").build();
+        return jwtTokenProvider.generateToken(userDetails);
     }
 
     //소셜 로그인
@@ -91,7 +93,7 @@ public class MemberServiceImpl implements MemberService {
         String token = createToken(member);
 
         return TokenResponseDto.builder()
-                .token(token)
+                .accessToken(token)
                 .build();
     }
 

@@ -5,13 +5,18 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+
 import java.security.Key;
+
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Date;
 import java.util.Map;
@@ -62,5 +67,19 @@ public class JwtTokenProvider {
                 .setIssuedAt(new Date(System.currentTimeMillis())) //토근 발행 시간
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public boolean validate(String token, UserDetails userDetails) {
+        final String uuid = getUuid(token);
+        return uuid.equals(userDetails.getUsername());
+    }
+
+    public String getHeader() {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        String headerValue = request.getHeader("Authorization");
+        if (headerValue != null && headerValue.startsWith("Bearer ")) {
+            return headerValue.substring(7).trim();
+        }
+        throw new IllegalArgumentException("토큰이 없습니다.");
     }
 }

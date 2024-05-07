@@ -1,9 +1,6 @@
 package com.leeforgiveness.memberservice.application;
 
-import com.leeforgiveness.memberservice.dto.MemberSaveRequestDto;
-import com.leeforgiveness.memberservice.dto.MemberUpdateRequestDto;
-import com.leeforgiveness.memberservice.dto.MemberDetailResponseDto;
-import com.leeforgiveness.memberservice.dto.SnsMemberAddRequestDto;
+import com.leeforgiveness.memberservice.dto.*;
 
 public interface MemberService {
 
