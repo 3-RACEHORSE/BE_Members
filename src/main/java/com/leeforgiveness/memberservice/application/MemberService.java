@@ -6,7 +6,7 @@ public interface MemberService {
 
     void snsAddMember(SnsMemberAddRequestDto snsMemberAddRequestDto);
 
-    TokenResponseDto snsLogin(SnsMemberLoginRequestDto snsMemberLoginRequestDto);
+//    TokenResponseDto snsLogin(SnsMemberLoginRequestDto snsMemberLoginRequestDto);
 
     void duplicationEmail(String email);
 

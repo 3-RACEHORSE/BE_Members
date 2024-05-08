@@ -1,9 +1,11 @@
 package com.leeforgiveness.memberservice.application;
 
 import com.leeforgiveness.memberservice.common.security.JwtTokenProvider;
+import com.leeforgiveness.memberservice.domain.InterestCategory;
 import com.leeforgiveness.memberservice.domain.Member;
 import com.leeforgiveness.memberservice.domain.SnsInfo;
 import com.leeforgiveness.memberservice.dto.*;
+import com.leeforgiveness.memberservice.infrastructure.InterestCategoryRepository;
 import com.leeforgiveness.memberservice.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.infrastructure.SnsInfoRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -24,7 +27,8 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final SnsInfoRepository snsInfoRepository;
-    private final JwtTokenProvider jwtTokenProvider;
+    //    private final JwtTokenProvider jwtTokenProvider;
+    private final InterestCategoryRepository interestCategoryRepository;
 
     //이메일 중복 확인
     @Override
@@ -70,32 +74,47 @@ public class MemberServiceImpl implements MemberService {
                 .build();
 
         snsInfoRepository.save(snsInfo);
+
+        // interestCategories 맵에서 각 항목을 가져와 InterestCategory 객체를 생성하고 저장
+        Map<Long, String> interestCategories = snsMemberAddRequestDto.getInterestCategories();
+        for (Map.Entry<Long, String> category : interestCategories.entrySet()) {
+            Long categoryId = category.getKey();
+            String categoryName = category.getValue();
+
+            InterestCategory interestCategory = InterestCategory.builder()
+                    .uuid(uuid)
+                    .categoryId(categoryId)
+                    .categoryName(categoryName)
+                    .build();
+
+            interestCategoryRepository.save(interestCategory);
+        }
     }
 
     //토큰 생성
-    private String createToken(Member member) {
-        UserDetails userDetails = User.withUsername(member.getEmail()).password(member.getUuid()).roles("USER").build();
-        return jwtTokenProvider.generateToken(userDetails);
-    }
+//    private String createToken(Member member) {
+//        UserDetails userDetails = User.withUsername(member.getEmail()).password(member.getUuid()).roles("USER").build();
+//        return jwtTokenProvider.generateToken(userDetails);
+//    }
 
     //소셜 로그인
-    @Override
-    @Transactional
-    public TokenResponseDto snsLogin(SnsMemberLoginRequestDto snsMemberLoginRequestDto) {
-        SnsInfo snsInfo = snsInfoRepository.findBySnsIdAndSnsType(snsMemberLoginRequestDto.getSnsId(), snsMemberLoginRequestDto.getSnsType())
-                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
-        Member member = memberRepository.findById(snsInfo.getMember().getId())
-                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
-        if (member.isTerminationStatus()) {
-            throw new IllegalArgumentException("탈퇴한 회원입니다.");
-        }
-
-        String token = createToken(member);
-
-        return TokenResponseDto.builder()
-                .accessToken(token)
-                .build();
-    }
+//    @Override
+//    @Transactional
+//    public TokenResponseDto snsLogin(SnsMemberLoginRequestDto snsMemberLoginRequestDto) {
+//        SnsInfo snsInfo = snsInfoRepository.findBySnsIdAndSnsType(snsMemberLoginRequestDto.getSnsId(), snsMemberLoginRequestDto.getSnsType())
+//                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+//        Member member = memberRepository.findById(snsInfo.getMember().getId())
+//                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+//        if (member.isTerminationStatus()) {
+//            throw new IllegalArgumentException("탈퇴한 회원입니다.");
+//        }
+//
+//        String token = createToken(member);
+//
+//        return TokenResponseDto.builder()
+//                .accessToken(token)
+//                .build();
+//    }
 
     //회원정보 조회
     @Override

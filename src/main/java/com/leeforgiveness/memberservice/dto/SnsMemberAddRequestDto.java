@@ -2,6 +2,8 @@ package com.leeforgiveness.memberservice.dto;
 
 import lombok.*;
 
+import java.util.Map;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,4 +15,5 @@ public class SnsMemberAddRequestDto {
     private String email;
     private String name;
     private String phoneNum;
+    private Map<Long, String> interestCategories;
 }
