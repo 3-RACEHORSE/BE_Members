@@ -4,6 +4,8 @@ import com.leeforgiveness.memberservice.sms.dto.SmsSendDto;
 import com.leeforgiveness.memberservice.sms.dto.SmsVerificationDto;
 import com.leeforgiveness.memberservice.sms.infrastucture.SmsCertification;
 import java.util.Random;
+
+import lombok.extern.slf4j.Slf4j;
 import net.nurigo.sdk.NurigoApp;
 import net.nurigo.sdk.message.model.Message;
 import net.nurigo.sdk.message.request.SingleMessageSendingRequest;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class SmsServiceImpl implements SmsService {
 
     private final SmsCertification smsCertification;
@@ -72,6 +75,8 @@ public class SmsServiceImpl implements SmsService {
     }
 
     private boolean isVerify(SmsVerificationDto request) {
+        log.info("code: {}", smsCertification.getSmsCode(request.getPhoneNum()));
+        log.info("request: {}", request.getVerificationCode());
         return (smsCertification.hasKey(request.getPhoneNum()) &&
             smsCertification.getSmsCode(request.getPhoneNum())
                 .equals(request.getVerificationCode()));
