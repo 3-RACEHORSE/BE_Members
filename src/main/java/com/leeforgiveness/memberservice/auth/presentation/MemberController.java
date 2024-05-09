@@ -5,6 +5,7 @@ import com.leeforgiveness.memberservice.auth.dto.MemberSaveRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
 import com.leeforgiveness.memberservice.auth.vo.MemberSaveRequestVo;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -12,13 +13,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-
+@Tag(name = "회원", description = "회원 관리 API")
 @RequestMapping("/api/v1/users")
 public class MemberController {
 
     private final MemberService memberService;
 
     @PostMapping("/signup")
+    @Operation(summary = "SNS 회원가입", description = "SNS 회원가입")
     public void snsAddMember(@RequestBody SnsMemberAddRequestDto snsMemberAddRequestDto) {
         memberService.snsAddMember(snsMemberAddRequestDto);
     }
