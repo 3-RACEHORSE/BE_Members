@@ -17,14 +17,13 @@ public class MemberDetailResponseDto {
     private String email;
     private String name;
     private String phoneNum;
-    private String resumeInfo;
     private String handle;
     private String profileImage;
 
     public static MemberDetailResponseVo dtoToVo(MemberDetailResponseDto memberDetailResponseDto) {
         return new MemberDetailResponseVo(memberDetailResponseDto.getEmail(),
             memberDetailResponseDto.getName(),
-            memberDetailResponseDto.getPhoneNum(), memberDetailResponseDto.getResumeInfo(),
+            memberDetailResponseDto.getPhoneNum(),
             memberDetailResponseDto.getHandle(), memberDetailResponseDto.getProfileImage());
     }
 }

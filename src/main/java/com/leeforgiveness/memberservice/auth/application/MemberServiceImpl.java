@@ -1,15 +1,20 @@
 package com.leeforgiveness.memberservice.auth.application;
 
+import com.leeforgiveness.memberservice.auth.domain.Career;
 import com.leeforgiveness.memberservice.auth.domain.InterestCategory;
 import com.leeforgiveness.memberservice.auth.domain.Member;
 import com.leeforgiveness.memberservice.auth.domain.SnsInfo;
 import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
-import com.leeforgiveness.memberservice.auth.dto.MemberSaveRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
+import com.leeforgiveness.memberservice.auth.infrastructure.CareerRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.InterestCategoryRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.SnsInfoRepository;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,6 +34,7 @@ public class MemberServiceImpl implements MemberService {
     private final SnsInfoRepository snsInfoRepository;
     //    private final JwtTokenProvider jwtTokenProvider;
     private final InterestCategoryRepository interestCategoryRepository;
+    private final CareerRepository careerRepository;
 
     //이메일 중복 확인
     @Override
@@ -111,6 +117,14 @@ public class MemberServiceImpl implements MemberService {
 
             interestCategoryRepository.save(interestCategory);
         }
+
+        // career를 빈값으로 초기화해서 저장
+        Career career = Career.builder()
+            .uuid(uuid)
+            .job("")
+            .build();
+
+        careerRepository.save(career);
     }
 
     //토큰 생성
@@ -148,7 +162,6 @@ public class MemberServiceImpl implements MemberService {
             .email(member.getEmail())
             .name(member.getName())
             .phoneNum(member.getPhoneNum())
-            .resumeInfo(member.getResumeInfo())
             .handle(member.getHandle())
             .profileImage(member.getProfileImage())
             .build();
@@ -192,5 +205,41 @@ public class MemberServiceImpl implements MemberService {
             .profileImage(member.getProfileImage())
             .build()
         );
+    }
+
+    //판매자 회원정보 조회
+    @Override
+    public SellerMemberDetailResponseDto findSellerMember(String handle) {
+        Member member = memberRepository.findByHandle(handle)
+            .orElseThrow(() -> new IllegalArgumentException("판매자를 찾을 수 없습니다."));
+
+        List<Career> career = careerRepository.findByUuid(member.getUuid());
+
+        List<InterestCategory> interestCategoryList = interestCategoryRepository.findByUuid(
+            member.getUuid());
+
+        List<String> interestCategories = new ArrayList<>();
+
+        for (InterestCategory interestCategory : interestCategoryList) {
+            interestCategories.add(interestCategory.getCategoryName());
+        }
+
+        List<Map<String, Object>> careerInfoList = new ArrayList<>();
+
+        for (Career careerInfo : careerRepository.findByUuid(member.getUuid())) {
+            Map<String, Object> careerInfoMap = new HashMap<>();
+            careerInfoMap.put("job", careerInfo.getJob());
+            careerInfoMap.put("year", careerInfo.getYear());
+            careerInfoMap.put("month", careerInfo.getMonth());
+
+            careerInfoList.add(careerInfoMap);
+        }
+        return SellerMemberDetailResponseDto.builder()
+            .name(member.getName())
+            .resumeInfo(careerInfoList)
+            .handle(member.getHandle())
+            .watchList(interestCategories)
+            .profileImage(member.getProfileImage())
+            .build();
     }
 }

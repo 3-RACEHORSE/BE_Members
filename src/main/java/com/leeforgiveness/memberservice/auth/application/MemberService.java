@@ -3,6 +3,7 @@ package com.leeforgiveness.memberservice.auth.application;
 import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSaveRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
 
 public interface MemberService {
@@ -16,6 +17,8 @@ public interface MemberService {
     void duplicationEmail(String email);
 
     MemberDetailResponseDto findMember(String uuid);
+
+    SellerMemberDetailResponseDto findSellerMember(String handle);
 
     void updateMember(String uuid, MemberUpdateRequestDto memberRequestDto);
 
