@@ -19,6 +19,9 @@ public class RedisConfig {
     @Value("${spring.redis.port}")
     private int port;
 
+//    @Value("${spring.redis.password}")
+//    private String redisPassword;
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
