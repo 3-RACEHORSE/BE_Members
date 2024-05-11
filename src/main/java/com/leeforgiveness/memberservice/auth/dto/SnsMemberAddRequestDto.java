@@ -10,6 +10,7 @@ import java.util.Map;
 @AllArgsConstructor
 @Builder
 public class SnsMemberAddRequestDto {
+
     private String snsId;
     private String snsType;
     private String email;

@@ -19,6 +19,7 @@ public class SnsInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "sns_info_id")
     private Long id;
     @Column(name = "sns_type", nullable = false)
     private String snsType;

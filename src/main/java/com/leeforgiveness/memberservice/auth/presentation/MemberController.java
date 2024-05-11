@@ -1,9 +1,11 @@
 package com.leeforgiveness.memberservice.auth.presentation;
 
 import com.leeforgiveness.memberservice.auth.application.MemberService;
+import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSaveRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
+import com.leeforgiveness.memberservice.auth.vo.MemberDetailResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberSaveRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailResponseVo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,8 +42,9 @@ public class MemberController {
 //        memberService.addMember(MemberSaveRequestDto.voToDto(memberSaveRequestVo));
 //    }
 
-//    @GetMapping("/myprofile")
-//    public void memberDetail() {
-//        return MemberDetailResponseDto.dtoToVo(memberService.findMember("uuid"));
-//    }
+    @GetMapping("/myprofile")
+    @Operation(summary = "사용자 프로필 조회", description = "사용자 프로필 조회")
+    public MemberDetailResponseVo memberDetail() {
+        return MemberDetailResponseDto.dtoToVo(memberService.findMember("uuid"));
+    }
 }
