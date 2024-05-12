@@ -6,6 +6,7 @@ import com.leeforgiveness.memberservice.auth.domain.Member;
 import com.leeforgiveness.memberservice.auth.domain.Qualification;
 import com.leeforgiveness.memberservice.auth.domain.SnsInfo;
 import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberSaveCareerRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
@@ -14,9 +15,11 @@ import com.leeforgiveness.memberservice.auth.infrastructure.InterestCategoryRepo
 import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.QualificationRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.SnsInfoRepository;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -46,27 +49,6 @@ public class MemberServiceImpl implements MemberService {
 			throw new IllegalArgumentException("이미 가입된 이메일입니다.");
 		}
 	}
-
-	//회원추가
-//    @Override
-//    @Transactional
-//    public void addMember(MemberSaveRequestDto memberSaveRequestDto) {
-//        duplicationEmail(memberSaveRequestDto.getEmail());
-//        createMember(memberSaveRequestDto);
-//    }
-
-//    private void createMember(MemberSaveRequestDto memberSaveRequestDto) {
-//        String uuid = UUID.randomUUID().toString();
-//
-//        Member member = Member.builder()
-//            .email(memberSaveRequestDto.getEmail())
-//            .uuid(uuid)
-//            .name(memberSaveRequestDto.getName())
-//            .phoneNum(memberSaveRequestDto.getPhoneNum())
-//            .build();
-//
-//        memberRepository.save(member);
-//    }
 
 	//SNS 회원 추가
 	@Override
@@ -123,14 +105,6 @@ public class MemberServiceImpl implements MemberService {
 
 			interestCategoryRepository.save(interestCategory);
 		}
-
-		// career를 빈값으로 초기화해서 저장
-		Career career = Career.builder()
-			.uuid(uuid)
-			.job("")
-			.build();
-
-		careerRepository.save(career);
 	}
 
 	//토큰 생성
@@ -216,13 +190,14 @@ public class MemberServiceImpl implements MemberService {
 			.orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
 		memberRepository.save(Member.builder()
+			.id(member.getId())
 			.uuid(member.getUuid())
 			.email(member.getEmail())
 			.name(memberUpdateRequestDto.getName())
 			.phoneNum(memberUpdateRequestDto.getPhoneNum())
-			.resumeInfo(memberUpdateRequestDto.getResumeInfo())
 			.handle(memberUpdateRequestDto.getHandle())
 			.profileImage(memberUpdateRequestDto.getProfileImage())
+			.terminationStatus(member.isTerminationStatus())
 			.build()
 		);
 	}
@@ -235,11 +210,11 @@ public class MemberServiceImpl implements MemberService {
 			.orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
 		memberRepository.save(Member.builder()
+			.id(member.getId())
 			.uuid(member.getUuid())
 			.email(member.getEmail())
 			.name(member.getName())
 			.phoneNum(member.getPhoneNum())
-			.resumeInfo(member.getResumeInfo())
 			.handle(member.getHandle())
 			.terminationStatus(true)
 			.profileImage(member.getProfileImage())
@@ -281,5 +256,20 @@ public class MemberServiceImpl implements MemberService {
 			.watchList(interestCategories)
 			.profileImage(member.getProfileImage())
 			.build();
+	}
+
+	//회원경력 등록
+	@Override
+	@Transactional
+	public void saveCareer(String uuid,
+		MemberSaveCareerRequestDto memberSaveCareerRequestDto) {
+		Career career = Career.builder()
+			.uuid(uuid)
+			.job(memberSaveCareerRequestDto.getJob())
+			.year(memberSaveCareerRequestDto.getYear())
+			.month(memberSaveCareerRequestDto.getMonth())
+			.build();
+
+		careerRepository.save(career);
 	}
 }
