@@ -52,4 +52,10 @@ public class MemberController {
 		memberService.updateMember("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f",
 			MemberUpdateRequestDto.voToDto(memberUpdateRequestVo));
 	}
+
+	@PostMapping("/resume")
+	@Operation(summary = "경력,자격증 추가", description = "경력,자격증 추가")
+	public void saveCareer(@RequestBody MemberSaveCareerRequestDto memberSaveCareerRequestDto) {
+		memberService.saveCareer("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f", memberSaveCareerRequestDto);
+	}
 }

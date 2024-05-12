@@ -16,7 +16,10 @@ import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.QualificationRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.SnsInfoRepository;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -271,5 +274,28 @@ public class MemberServiceImpl implements MemberService {
 			.build();
 
 		careerRepository.save(career);
+
+		List<Map<String, Object>> qualifications = memberSaveCareerRequestDto.getCertifications();
+
+		for (Map<String, Object> qualification : qualifications) {
+			String name = (String) qualification.get("certification_name");
+			String issueDateString = (String) qualification.get("issue_date");
+			Date issueDate;
+			try {
+				issueDate = new SimpleDateFormat("yyyy.MM.dd").parse(issueDateString);
+			} catch (ParseException e) {
+				log.error("Failed to parse issue date: " + issueDateString, e);
+				continue;
+			}
+			String agency = (String) qualification.get("agency");
+			Qualification qualificationInfo = Qualification.builder()
+				.uuid(uuid)
+				.name(name)
+				.issueDate(issueDate)
+				.agency(agency)
+				.build();
+
+			qualificationRepository.save(qualificationInfo);
+		}
 	}
 }
