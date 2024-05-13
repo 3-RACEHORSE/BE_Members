@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class MemberUpdateRequestVo {
+
     public String name;
     public String phoneNum;
     public String handle;

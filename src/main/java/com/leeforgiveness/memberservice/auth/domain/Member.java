@@ -26,7 +26,7 @@ public class Member {
     private String resumeInfo;
     @Column(name = "handle", nullable = false)
     private String handle;
-//    @Column(name = "termination_status", nullable = false)
+    @Column(name = "termination_status", nullable = false)
     private boolean terminationStatus;
     @Column(name = "profile_image")
     private String profileImage;

@@ -1,6 +1,8 @@
 package com.leeforgiveness.memberservice.auth.dto;
 
 import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailResponseVo;
+import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,14 +18,17 @@ public class SellerMemberDetailResponseDto {
 
     private String name;
     private String handle;
-    private String resumeInfo;
+    private List<String> watchList;
+    private String profileImage;
+    private List<Map<String, Object>> resumeInfo;
 
     public static SellerMemberDetailResponseVo dtoToVo(
-        MemberDetailResponseDto memberDetailResponseDto) {
+        SellerMemberDetailResponseDto sellerMemberDetailResponseDto) {
         return new SellerMemberDetailResponseVo(
-            memberDetailResponseDto.getName(),
-            memberDetailResponseDto.getResumeInfo(),
-            memberDetailResponseDto.getHandle(),
-            memberDetailResponseDto.getProfileImage());
+            sellerMemberDetailResponseDto.getName(),
+            sellerMemberDetailResponseDto.getResumeInfo(),
+            sellerMemberDetailResponseDto.getHandle(),
+            sellerMemberDetailResponseDto.getWatchList(),
+            sellerMemberDetailResponseDto.getProfileImage());
     }
 }

@@ -1,12 +1,12 @@
 package com.leeforgiveness.memberservice.auth.infrastructure;
 
-import com.leeforgiveness.memberservice.auth.domain.InterestCategory;
+import com.leeforgiveness.memberservice.auth.domain.Career;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface InterestCategoryRepository extends JpaRepository<InterestCategory, Long> {
+public interface CareerRepository extends JpaRepository<Career, Long> {
 
-    List<InterestCategory> findByUuid(String uuid);
+    List<Career> findByUuid(String uuid);
 }
