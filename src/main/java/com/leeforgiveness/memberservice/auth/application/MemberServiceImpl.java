@@ -5,7 +5,11 @@ import com.leeforgiveness.memberservice.auth.domain.InterestCategory;
 import com.leeforgiveness.memberservice.auth.domain.Member;
 import com.leeforgiveness.memberservice.auth.domain.Qualification;
 import com.leeforgiveness.memberservice.auth.domain.SnsInfo;
+import com.leeforgiveness.memberservice.auth.dto.MemberCareerAddRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberCareerDeleteRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberQualificationAddRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberQualificationDeleteRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSaveCareerRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
@@ -297,5 +301,62 @@ public class MemberServiceImpl implements MemberService {
 
 			qualificationRepository.save(qualificationInfo);
 		}
+	}
+
+	//회원 경력 삭제
+	@Override
+	@Transactional
+	public void removeCareer(String uuid, MemberCareerDeleteRequestDto memberCareerDeleteDto) {
+		String job = memberCareerDeleteDto.getJob();
+		Career findCareer = careerRepository.findByUuidAndJob(uuid, job)
+			.orElseThrow(() -> new IllegalArgumentException("경력을 찾을 수 없습니다."));
+		careerRepository.delete(findCareer);
+	}
+
+	@Override
+	@Transactional
+	public void addCareer(String uuid, MemberCareerAddRequestDto memberCareerAddDto) {
+		String job = memberCareerAddDto.getJob();
+		careerRepository.findByUuidAndJob(uuid, job)
+			.ifPresent(career -> {
+				throw new IllegalArgumentException("이미 등록된 경력입니다.");
+			});
+		Career career = Career.builder()
+			.uuid(uuid)
+			.job(memberCareerAddDto.getJob())
+			.year(memberCareerAddDto.getYear())
+			.month(memberCareerAddDto.getMonth())
+			.build();
+
+		careerRepository.save(career);
+	}
+
+	@Override
+	@Transactional
+	public void removeQualification(String uuid,
+		MemberQualificationDeleteRequestDto memberQualificationDeleteDto) {
+		String name = memberQualificationDeleteDto.getName();
+		Qualification findQualification = qualificationRepository.findByUuidAndName(uuid, name)
+			.orElseThrow(() -> new IllegalArgumentException("자격증을 찾을 수 없습니다."));
+		qualificationRepository.delete(findQualification);
+	}
+
+	@Override
+	@Transactional
+	public void addQualification(String uuid,
+		MemberQualificationAddRequestDto memberQualificationAddRequestDto) {
+		String name = memberQualificationAddRequestDto.getName();
+		qualificationRepository.findByUuidAndName(uuid, name)
+			.ifPresent(qualification -> {
+				throw new IllegalArgumentException("이미 등록된 자격증입니다.");
+			});
+		Qualification qualification = Qualification.builder()
+			.uuid(uuid)
+			.name(memberQualificationAddRequestDto.getName())
+			.issueDate(memberQualificationAddRequestDto.getIssueDate())
+			.agency(memberQualificationAddRequestDto.getAgency())
+			.build();
+
+		qualificationRepository.save(qualification);
 	}
 }

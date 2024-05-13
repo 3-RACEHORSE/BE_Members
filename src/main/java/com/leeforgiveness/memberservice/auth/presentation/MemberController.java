@@ -2,8 +2,11 @@ package com.leeforgiveness.memberservice.auth.presentation;
 
 import com.leeforgiveness.memberservice.auth.application.MemberService;
 import com.leeforgiveness.memberservice.auth.dto.*;
+import com.leeforgiveness.memberservice.auth.vo.MemberCareerAddRequestVo;
+import com.leeforgiveness.memberservice.auth.vo.MemberCareerDeleteRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberDetailResponseVo;
-import com.leeforgiveness.memberservice.auth.vo.MemberSaveRequestVo;
+import com.leeforgiveness.memberservice.auth.vo.MemberQualificationAddRequestVo;
+import com.leeforgiveness.memberservice.auth.vo.MemberQualificationDeleteRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberUpdateRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailResponseVo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,7 +14,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import retrofit2.http.GET;
 
 @RestController
 @Slf4j
@@ -37,7 +39,8 @@ public class MemberController {
 	@GetMapping("/myprofile")
 	@Operation(summary = "사용자 프로필 조회", description = "사용자 프로필 조회")
 	public MemberDetailResponseVo memberDetail() {
-		return MemberDetailResponseDto.dtoToVo(memberService.findMember("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f"));
+		return MemberDetailResponseDto.dtoToVo(
+			memberService.findMember("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f"));
 	}
 
 	@PatchMapping("/delete")
@@ -56,6 +59,37 @@ public class MemberController {
 	@PostMapping("/resume")
 	@Operation(summary = "경력,자격증 추가", description = "경력,자격증 추가")
 	public void saveCareer(@RequestBody MemberSaveCareerRequestDto memberSaveCareerRequestDto) {
-		memberService.saveCareer("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f", memberSaveCareerRequestDto);
+		memberService.saveCareer("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f",
+			memberSaveCareerRequestDto);
+	}
+
+	@DeleteMapping("/resume")
+	@Operation(summary = "경력 삭제", description = "경력 삭제")
+	public void deleteCareer(@RequestBody MemberCareerDeleteRequestVo memberCareerDeleteVo) {
+		memberService.removeCareer("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f",
+			MemberCareerDeleteRequestDto.voToDto(memberCareerDeleteVo));
+	}
+
+	@PostMapping("/career")
+	@Operation(summary = "경력 추가", description = "경력 추가")
+	public void addCareer(@RequestBody MemberCareerAddRequestVo memberCareerAddRequestVo) {
+		memberService.addCareer("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f",
+			MemberCareerAddRequestDto.voToDto(memberCareerAddRequestVo));
+	}
+
+	@DeleteMapping("/qualification")
+	@Operation(summary = "자격증 삭제", description = "자격증 삭제")
+	public void deleteQualification(
+		@RequestBody MemberQualificationDeleteRequestVo memberQualificationDeleteVo) {
+		memberService.removeQualification("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f",
+			MemberQualificationDeleteRequestDto.voToDto(memberQualificationDeleteVo));
+	}
+
+	@PostMapping("/qualification")
+	@Operation(summary = "자격증 추가", description = "자격증 추가")
+	public void addQualification(
+		@RequestBody MemberQualificationAddRequestVo memberQualificationAddRequestVo) {
+		memberService.addQualification("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f",
+			MemberQualificationAddRequestDto.voToDto(memberQualificationAddRequestVo));
 	}
 }

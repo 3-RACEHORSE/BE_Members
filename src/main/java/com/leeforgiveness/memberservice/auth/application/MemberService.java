@@ -1,8 +1,11 @@
 package com.leeforgiveness.memberservice.auth.application;
 
+import com.leeforgiveness.memberservice.auth.dto.MemberCareerAddRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberCareerDeleteRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberQualificationAddRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberQualificationDeleteRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSaveCareerRequestDto;
-import com.leeforgiveness.memberservice.auth.dto.MemberSaveRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
@@ -27,4 +30,13 @@ public interface MemberService {
 
 	void saveCareer(String uuid,
 		MemberSaveCareerRequestDto memberSaveCareerRequestDto);
+
+	void removeCareer(String uuid, MemberCareerDeleteRequestDto memberCareerDeleteDto);
+
+	void addCareer(String uuid, MemberCareerAddRequestDto memberCareerAddDto);
+
+	void removeQualification(String uuid,
+		MemberQualificationDeleteRequestDto memberQualificationDeleteDto);
+
+	void addQualification(String uuid, MemberQualificationAddRequestDto memberQualificationAddDto);
 }
