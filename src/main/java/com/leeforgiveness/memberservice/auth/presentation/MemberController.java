@@ -9,6 +9,7 @@ import com.leeforgiveness.memberservice.auth.vo.MemberQualificationAddRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberQualificationDeleteRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberUpdateRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailResponseVo;
+import com.leeforgiveness.memberservice.common.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,70 +27,85 @@ public class MemberController {
 
 	@PostMapping("/signup")
 	@Operation(summary = "SNS 회원가입", description = "SNS 회원가입")
-	public void snsAddMember(@RequestBody SnsMemberAddRequestDto snsMemberAddRequestDto) {
+	public SuccessResponse<Object> snsAddMember(
+		@RequestBody SnsMemberAddRequestDto snsMemberAddRequestDto) {
 		memberService.snsAddMember(snsMemberAddRequestDto);
+		return new SuccessResponse<>(null);
 	}
 
 	@GetMapping("/profile/{handle}")
 	@Operation(summary = "판매자 프로필 조회", description = "판매자 프로필 조회")
-	public SellerMemberDetailResponseVo sellerMemberDetail(@PathVariable String handle) {
-		return SellerMemberDetailResponseDto.dtoToVo(memberService.findSellerMember(handle));
+	public SuccessResponse<SellerMemberDetailResponseVo> sellerMemberDetail(
+		@PathVariable String handle) {
+		return new SuccessResponse<>(
+			SellerMemberDetailResponseDto.dtoToVo(memberService.findSellerMember(handle)));
 	}
 
 	@GetMapping("/myprofile")
 	@Operation(summary = "사용자 프로필 조회", description = "사용자 프로필 조회")
-	public MemberDetailResponseVo memberDetail() {
-		return MemberDetailResponseDto.dtoToVo(
-			memberService.findMember("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f"));
+	public SuccessResponse<MemberDetailResponseVo> memberDetail(@RequestHeader String uuid) {
+		return new SuccessResponse<>(MemberDetailResponseDto.dtoToVo(
+			memberService.findMember(uuid)));
 	}
 
 	@PatchMapping("/delete")
 	@Operation(summary = "회원 탈퇴", description = "회원 탈퇴")
-	public void deleteMember() {
-		memberService.removeMember("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f");
+	public SuccessResponse<Object> deleteMember(@RequestHeader String uuid) {
+		memberService.removeMember(uuid);
+		return new SuccessResponse<>(null);
 	}
 
 	@PatchMapping("/modify")
 	@Operation(summary = "회원 정보 수정", description = "회원 정보 수정")
-	public void modifyMember(@RequestBody MemberUpdateRequestVo memberUpdateRequestVo) {
-		memberService.updateMember("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f",
+	public SuccessResponse<Object> modifyMember(@RequestHeader String uuid,
+		@RequestBody MemberUpdateRequestVo memberUpdateRequestVo) {
+		memberService.updateMember(uuid,
 			MemberUpdateRequestDto.voToDto(memberUpdateRequestVo));
+		return new SuccessResponse<>(null);
 	}
 
 	@PostMapping("/resume")
 	@Operation(summary = "경력,자격증 추가", description = "경력,자격증 추가")
-	public void saveCareer(@RequestBody MemberSaveCareerRequestDto memberSaveCareerRequestDto) {
-		memberService.saveCareer("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f",
+	public SuccessResponse<Object> saveCareer(@RequestHeader String uuid,
+		@RequestBody MemberSaveCareerRequestDto memberSaveCareerRequestDto) {
+		memberService.saveCareer(uuid,
 			memberSaveCareerRequestDto);
+		return new SuccessResponse<>(null);
 	}
 
 	@DeleteMapping("/resume")
 	@Operation(summary = "경력 삭제", description = "경력 삭제")
-	public void deleteCareer(@RequestBody MemberCareerDeleteRequestVo memberCareerDeleteVo) {
-		memberService.removeCareer("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f",
+	public SuccessResponse<Object> deleteCareer(@RequestHeader String uuid,
+		@RequestBody MemberCareerDeleteRequestVo memberCareerDeleteVo) {
+		memberService.removeCareer(uuid,
 			MemberCareerDeleteRequestDto.voToDto(memberCareerDeleteVo));
+		return new SuccessResponse<>(null);
 	}
 
 	@PostMapping("/career")
 	@Operation(summary = "경력 추가", description = "경력 추가")
-	public void addCareer(@RequestBody MemberCareerAddRequestVo memberCareerAddRequestVo) {
-		memberService.addCareer("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f",
+	public SuccessResponse<Object> addCareer(@RequestHeader String uuid,
+		@RequestBody MemberCareerAddRequestVo memberCareerAddRequestVo) {
+		memberService.addCareer(uuid,
 			MemberCareerAddRequestDto.voToDto(memberCareerAddRequestVo));
+		return new SuccessResponse<>(null);
 	}
 
 	@DeleteMapping("/qualification")
 	@Operation(summary = "자격증 삭제", description = "자격증 삭제")
-	public void deleteQualification(
+	public SuccessResponse<Object> deleteQualification(@RequestHeader String uuid,
 		@RequestBody MemberQualificationDeleteRequestVo memberQualificationDeleteVo) {
-		memberService.removeQualification("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f",
+		memberService.removeQualification(uuid,
 			MemberQualificationDeleteRequestDto.voToDto(memberQualificationDeleteVo));
+		return new SuccessResponse<>(null);
 	}
 
 	@PostMapping("/qualification")
 	@Operation(summary = "자격증 추가", description = "자격증 추가")
-	public void addQualification(
+	public SuccessResponse<Object> addQualification(@RequestHeader String uuid,
 		@RequestBody MemberQualificationAddRequestVo memberQualificationAddRequestVo) {
-		memberService.addQualification("7e1f6ddd-3c20-4b78-b47b-c21fbe215f9f",
+		memberService.addQualification(uuid,
 			MemberQualificationAddRequestDto.voToDto(memberQualificationAddRequestVo));
+		return new SuccessResponse<>(null);
 	}
 }
