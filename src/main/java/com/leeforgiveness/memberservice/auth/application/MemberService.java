@@ -6,9 +6,12 @@ import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberQualificationAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberQualificationDeleteRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSaveCareerRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberSaveRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.SnsMemberLoginRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.TokenResponseDto;
 
 public interface MemberService {
 
@@ -16,7 +19,7 @@ public interface MemberService {
 
 	void snsAddMember(SnsMemberAddRequestDto snsMemberAddRequestDto);
 
-//    TokenResponseDto snsLogin(SnsMemberLoginRequestDto snsMemberLoginRequestDto);
+    TokenResponseDto snsLogin(SnsMemberLoginRequestDto snsMemberLoginRequestDto);
 
 	void duplicationEmail(String email);
 

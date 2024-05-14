@@ -17,7 +17,7 @@ public enum ResponseStatus {
      * 400 : security 에러
      */
     WRONG_JWT_TOKEN(401, "다시 로그인 해주세요"),
-
+    USER_NOT_FOUND(402, "존재하지 않는 유저입니다"),
     /**
      * 900: 기타 에러
      */

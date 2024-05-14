@@ -33,6 +33,12 @@ public class MemberController {
 		return new SuccessResponse<>(null);
 	}
 
+	@PostMapping("/login")
+	@Operation(summary = "로그인", description = "로그인")
+	public SuccessResponse<Object> login(@RequestBody MemberLoginRequestDto memberLoginRequestDto) {
+		return new SuccessResponse<>(memberService.login(memberLoginRequestDto));
+	}
+
 	@GetMapping("/profile/{handle}")
 	@Operation(summary = "판매자 프로필 조회", description = "판매자 프로필 조회")
 	public SuccessResponse<SellerMemberDetailResponseVo> sellerMemberDetail(
