@@ -47,6 +47,7 @@ public class MemberController {
 
 		return ResponseEntity.ok()
 			.header(HttpHeaders.AUTHORIZATION, tokenResponseDto.getAccessToken())
+			.header("uuid", tokenResponseDto.getUuid())
 			.body(new SuccessResponse<>(null));
 	}
 
