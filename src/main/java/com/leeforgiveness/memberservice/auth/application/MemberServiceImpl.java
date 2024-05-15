@@ -147,6 +147,7 @@ public class MemberServiceImpl implements MemberService {
 
 		return TokenResponseDto.builder()
 			.accessToken(token)
+			.uuid(member.getUuid())
 			.build();
 	}
 
