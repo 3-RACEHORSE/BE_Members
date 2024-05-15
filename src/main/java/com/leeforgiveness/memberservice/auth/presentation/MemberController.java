@@ -16,6 +16,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,30 +34,33 @@ public class MemberController {
 	public SuccessResponse<Object> snsAddMember(
 		@RequestBody SnsMemberAddRequestDto snsMemberAddRequestDto) {
 		memberService.snsAddMember(snsMemberAddRequestDto);
-		return new SuccessResponse<>(null, null);
+		return new SuccessResponse<>(null);
 	}
 
 	@PostMapping("/login")
 	@Operation(summary = "로그인", description = "로그인")
-	public SuccessResponse<Object> login(
+	public ResponseEntity<SuccessResponse<Object>> login(
 		@RequestBody MemberSnsLoginRequestVo memberSnsLoginRequestVo) {
 		TokenResponseDto tokenResponseDto = memberService.snsLogin(
 			MemberSnsLoginRequestDto.voToDto(memberSnsLoginRequestVo));
-		return new SuccessResponse<>(null, tokenResponseDto);
+
+		return ResponseEntity.ok()
+			.header(HttpHeaders.AUTHORIZATION, tokenResponseDto.getAccessToken())
+			.body(new SuccessResponse<>(null));
 	}
 
 	@GetMapping("/profile/{handle}")
 	@Operation(summary = "판매자 프로필 조회", description = "판매자 프로필 조회")
 	public SuccessResponse<SellerMemberDetailResponseVo> sellerMemberDetail(
 		@PathVariable String handle) {
-		return new SuccessResponse<>(null,
+		return new SuccessResponse<>(
 			SellerMemberDetailResponseDto.dtoToVo(memberService.findSellerMember(handle)));
 	}
 
 	@GetMapping("/myprofile")
 	@Operation(summary = "사용자 프로필 조회", description = "사용자 프로필 조회")
 	public SuccessResponse<MemberDetailResponseVo> memberDetail(@RequestHeader String uuid) {
-		return new SuccessResponse<>(null, MemberDetailResponseDto.dtoToVo(
+		return new SuccessResponse<>(MemberDetailResponseDto.dtoToVo(
 			memberService.findMember(uuid)));
 	}
 
@@ -63,7 +68,7 @@ public class MemberController {
 	@Operation(summary = "회원 탈퇴", description = "회원 탈퇴")
 	public SuccessResponse<Object> deleteMember(@RequestHeader String uuid) {
 		memberService.removeMember(uuid);
-		return new SuccessResponse<>(null, null);
+		return new SuccessResponse<>(null);
 	}
 
 	@PatchMapping("/modify")
@@ -72,7 +77,7 @@ public class MemberController {
 		@RequestBody MemberUpdateRequestVo memberUpdateRequestVo) {
 		memberService.updateMember(uuid,
 			MemberUpdateRequestDto.voToDto(memberUpdateRequestVo));
-		return new SuccessResponse<>(null, null);
+		return new SuccessResponse<>(null);
 	}
 
 	@PostMapping("/resume")
@@ -81,7 +86,7 @@ public class MemberController {
 		@RequestBody MemberSaveCareerRequestDto memberSaveCareerRequestDto) {
 		memberService.saveCareer(uuid,
 			memberSaveCareerRequestDto);
-		return new SuccessResponse<>(null, null);
+		return new SuccessResponse<>(null);
 	}
 
 	@DeleteMapping("/resume")
@@ -90,7 +95,7 @@ public class MemberController {
 		@RequestBody MemberCareerDeleteRequestVo memberCareerDeleteVo) {
 		memberService.removeCareer(uuid,
 			MemberCareerDeleteRequestDto.voToDto(memberCareerDeleteVo));
-		return new SuccessResponse<>(null, null);
+		return new SuccessResponse<>(null);
 	}
 
 	@PostMapping("/career")
@@ -99,7 +104,7 @@ public class MemberController {
 		@RequestBody MemberCareerAddRequestVo memberCareerAddRequestVo) {
 		memberService.addCareer(uuid,
 			MemberCareerAddRequestDto.voToDto(memberCareerAddRequestVo));
-		return new SuccessResponse<>(null, null);
+		return new SuccessResponse<>(null);
 	}
 
 	@DeleteMapping("/qualification")
@@ -108,7 +113,7 @@ public class MemberController {
 		@RequestBody MemberQualificationDeleteRequestVo memberQualificationDeleteVo) {
 		memberService.removeQualification(uuid,
 			MemberQualificationDeleteRequestDto.voToDto(memberQualificationDeleteVo));
-		return new SuccessResponse<>(null, null);
+		return new SuccessResponse<>(null);
 	}
 
 	@PostMapping("/qualification")
@@ -117,6 +122,6 @@ public class MemberController {
 		@RequestBody MemberQualificationAddRequestVo memberQualificationAddRequestVo) {
 		memberService.addQualification(uuid,
 			MemberQualificationAddRequestDto.voToDto(memberQualificationAddRequestVo));
-		return new SuccessResponse<>(null, null);
+		return new SuccessResponse<>(null);
 	}
 }
