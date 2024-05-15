@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 public class SuccessResponse<T> extends ResponseEntity<T> {
 
 	@Builder
-	public SuccessResponse(T body) {
+	public SuccessResponse(T header, T body) {
 		super(body, HttpStatus.OK);
 	}
 }

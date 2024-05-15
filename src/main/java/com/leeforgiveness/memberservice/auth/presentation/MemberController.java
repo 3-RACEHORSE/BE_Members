@@ -7,6 +7,7 @@ import com.leeforgiveness.memberservice.auth.vo.MemberCareerDeleteRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberDetailResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberQualificationAddRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberQualificationDeleteRequestVo;
+import com.leeforgiveness.memberservice.auth.vo.MemberSnsLoginRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberUpdateRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailResponseVo;
 import com.leeforgiveness.memberservice.common.SuccessResponse;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,27 +32,30 @@ public class MemberController {
 	public SuccessResponse<Object> snsAddMember(
 		@RequestBody SnsMemberAddRequestDto snsMemberAddRequestDto) {
 		memberService.snsAddMember(snsMemberAddRequestDto);
-		return new SuccessResponse<>(null);
+		return new SuccessResponse<>(null, null);
 	}
 
 	@PostMapping("/login")
 	@Operation(summary = "로그인", description = "로그인")
-	public SuccessResponse<Object> login(@RequestBody MemberLoginRequestDto memberLoginRequestDto) {
-		return new SuccessResponse<>(memberService.login(memberLoginRequestDto));
+	public SuccessResponse<Object> login(
+		@RequestBody MemberSnsLoginRequestVo memberSnsLoginRequestVo) {
+		TokenResponseDto tokenResponseDto = memberService.snsLogin(
+			MemberSnsLoginRequestDto.voToDto(memberSnsLoginRequestVo));
+		return new SuccessResponse<>(null, tokenResponseDto);
 	}
 
 	@GetMapping("/profile/{handle}")
 	@Operation(summary = "판매자 프로필 조회", description = "판매자 프로필 조회")
 	public SuccessResponse<SellerMemberDetailResponseVo> sellerMemberDetail(
 		@PathVariable String handle) {
-		return new SuccessResponse<>(
+		return new SuccessResponse<>(null,
 			SellerMemberDetailResponseDto.dtoToVo(memberService.findSellerMember(handle)));
 	}
 
 	@GetMapping("/myprofile")
 	@Operation(summary = "사용자 프로필 조회", description = "사용자 프로필 조회")
 	public SuccessResponse<MemberDetailResponseVo> memberDetail(@RequestHeader String uuid) {
-		return new SuccessResponse<>(MemberDetailResponseDto.dtoToVo(
+		return new SuccessResponse<>(null, MemberDetailResponseDto.dtoToVo(
 			memberService.findMember(uuid)));
 	}
 
@@ -58,7 +63,7 @@ public class MemberController {
 	@Operation(summary = "회원 탈퇴", description = "회원 탈퇴")
 	public SuccessResponse<Object> deleteMember(@RequestHeader String uuid) {
 		memberService.removeMember(uuid);
-		return new SuccessResponse<>(null);
+		return new SuccessResponse<>(null, null);
 	}
 
 	@PatchMapping("/modify")
@@ -67,7 +72,7 @@ public class MemberController {
 		@RequestBody MemberUpdateRequestVo memberUpdateRequestVo) {
 		memberService.updateMember(uuid,
 			MemberUpdateRequestDto.voToDto(memberUpdateRequestVo));
-		return new SuccessResponse<>(null);
+		return new SuccessResponse<>(null, null);
 	}
 
 	@PostMapping("/resume")
@@ -76,7 +81,7 @@ public class MemberController {
 		@RequestBody MemberSaveCareerRequestDto memberSaveCareerRequestDto) {
 		memberService.saveCareer(uuid,
 			memberSaveCareerRequestDto);
-		return new SuccessResponse<>(null);
+		return new SuccessResponse<>(null, null);
 	}
 
 	@DeleteMapping("/resume")
@@ -85,7 +90,7 @@ public class MemberController {
 		@RequestBody MemberCareerDeleteRequestVo memberCareerDeleteVo) {
 		memberService.removeCareer(uuid,
 			MemberCareerDeleteRequestDto.voToDto(memberCareerDeleteVo));
-		return new SuccessResponse<>(null);
+		return new SuccessResponse<>(null, null);
 	}
 
 	@PostMapping("/career")
@@ -94,7 +99,7 @@ public class MemberController {
 		@RequestBody MemberCareerAddRequestVo memberCareerAddRequestVo) {
 		memberService.addCareer(uuid,
 			MemberCareerAddRequestDto.voToDto(memberCareerAddRequestVo));
-		return new SuccessResponse<>(null);
+		return new SuccessResponse<>(null, null);
 	}
 
 	@DeleteMapping("/qualification")
@@ -103,7 +108,7 @@ public class MemberController {
 		@RequestBody MemberQualificationDeleteRequestVo memberQualificationDeleteVo) {
 		memberService.removeQualification(uuid,
 			MemberQualificationDeleteRequestDto.voToDto(memberQualificationDeleteVo));
-		return new SuccessResponse<>(null);
+		return new SuccessResponse<>(null, null);
 	}
 
 	@PostMapping("/qualification")
@@ -112,6 +117,6 @@ public class MemberController {
 		@RequestBody MemberQualificationAddRequestVo memberQualificationAddRequestVo) {
 		memberService.addQualification(uuid,
 			MemberQualificationAddRequestDto.voToDto(memberQualificationAddRequestVo));
-		return new SuccessResponse<>(null);
+		return new SuccessResponse<>(null, null);
 	}
 }
