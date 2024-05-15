@@ -7,6 +7,7 @@ import com.leeforgiveness.memberservice.auth.vo.MemberCareerDeleteRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberDetailResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberQualificationAddRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberQualificationDeleteRequestVo;
+import com.leeforgiveness.memberservice.auth.vo.MemberSnsLoginRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberUpdateRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailResponseVo;
 import com.leeforgiveness.memberservice.common.SuccessResponse;
@@ -14,6 +15,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,6 +35,18 @@ public class MemberController {
 		@RequestBody SnsMemberAddRequestDto snsMemberAddRequestDto) {
 		memberService.snsAddMember(snsMemberAddRequestDto);
 		return new SuccessResponse<>(null);
+	}
+
+	@PostMapping("/login")
+	@Operation(summary = "로그인", description = "로그인")
+	public ResponseEntity<SuccessResponse<Object>> login(
+		@RequestBody MemberSnsLoginRequestVo memberSnsLoginRequestVo) {
+		TokenResponseDto tokenResponseDto = memberService.snsLogin(
+			MemberSnsLoginRequestDto.voToDto(memberSnsLoginRequestVo));
+
+		return ResponseEntity.ok()
+			.header(HttpHeaders.AUTHORIZATION, tokenResponseDto.getAccessToken())
+			.body(new SuccessResponse<>(null));
 	}
 
 	@GetMapping("/profile/{handle}")

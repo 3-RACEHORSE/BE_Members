@@ -11,15 +11,19 @@ import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberQualificationAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberQualificationDeleteRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSaveCareerRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberSnsLoginRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.SnsMemberLoginRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.TokenResponseDto;
 import com.leeforgiveness.memberservice.auth.infrastructure.CareerRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.InterestCategoryRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.QualificationRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.SnsInfoRepository;
 
+import com.leeforgiveness.memberservice.common.security.JwtTokenProvider;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +33,8 @@ import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +50,7 @@ public class MemberServiceImpl implements MemberService {
 
 	private final MemberRepository memberRepository;
 	private final SnsInfoRepository snsInfoRepository;
-	//    private final JwtTokenProvider jwtTokenProvider;
+	private final JwtTokenProvider jwtTokenProvider;
 	private final InterestCategoryRepository interestCategoryRepository;
 	private final CareerRepository careerRepository;
 	private final QualificationRepository qualificationRepository;
@@ -114,30 +120,30 @@ public class MemberServiceImpl implements MemberService {
 		}
 	}
 
-	//토큰 생성
-//    private String createToken(Member member) {
-//        UserDetails userDetails = User.withUsername(member.getEmail()).password(member.getUuid()).roles("USER").build();
-//        return jwtTokenProvider.generateToken(userDetails);
-//    }
+//	토큰 생성
+    private String createToken(Member member) {
+        UserDetails userDetails = User.withUsername(member.getEmail()).password(member.getUuid()).roles("USER").build();
+        return jwtTokenProvider.generateToken(userDetails);
+    }
 
-	//소셜 로그인
-//    @Override
-//    @Transactional
-//    public TokenResponseDto snsLogin(SnsMemberLoginRequestDto snsMemberLoginRequestDto) {
+//	소셜 로그인
+    @Override
+    @Transactional
+    public TokenResponseDto snsLogin(MemberSnsLoginRequestDto memberSnsLoginRequestDto) {
 //        SnsInfo snsInfo = snsInfoRepository.findBySnsIdAndSnsType(snsMemberLoginRequestDto.getSnsId(), snsMemberLoginRequestDto.getSnsType())
 //                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
-//        Member member = memberRepository.findById(snsInfo.getMember().getId())
-//                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
-//        if (member.isTerminationStatus()) {
-//            throw new IllegalArgumentException("탈퇴한 회원입니다.");
-//        }
-//
-//        String token = createToken(member);
-//
-//        return TokenResponseDto.builder()
-//                .accessToken(token)
-//                .build();
-//    }
+        Member member = memberRepository.findByEmail(memberSnsLoginRequestDto.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        if (member.isTerminationStatus()) {
+            throw new IllegalArgumentException("탈퇴한 회원입니다.");
+        }
+
+        String token = createToken(member);
+
+        return TokenResponseDto.builder()
+                .accessToken(token)
+                .build();
+    }
 
 	//회원정보 조회
 	@Override
