@@ -5,11 +5,13 @@ import com.leeforgiveness.memberservice.auth.domain.InterestCategory;
 import com.leeforgiveness.memberservice.auth.domain.Member;
 import com.leeforgiveness.memberservice.auth.domain.Qualification;
 import com.leeforgiveness.memberservice.auth.domain.SnsInfo;
+import com.leeforgiveness.memberservice.auth.domain.UserReport;
 import com.leeforgiveness.memberservice.auth.dto.MemberCareerAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberCareerDeleteRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberQualificationAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberQualificationDeleteRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberReportRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSaveCareerRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSnsLoginRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
@@ -23,6 +25,7 @@ import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.QualificationRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.SnsInfoRepository;
 
+import com.leeforgiveness.memberservice.auth.infrastructure.UserReportRepository;
 import com.leeforgiveness.memberservice.common.security.JwtTokenProvider;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -54,6 +57,7 @@ public class MemberServiceImpl implements MemberService {
 	private final InterestCategoryRepository interestCategoryRepository;
 	private final CareerRepository careerRepository;
 	private final QualificationRepository qualificationRepository;
+	private final UserReportRepository userReportRepository;
 
 	//이메일 중복 확인
 	@Override
@@ -120,30 +124,31 @@ public class MemberServiceImpl implements MemberService {
 		}
 	}
 
-//	토큰 생성
-    private String createToken(Member member) {
-        UserDetails userDetails = User.withUsername(member.getEmail()).password(member.getUuid()).roles("USER").build();
-        return jwtTokenProvider.generateToken(userDetails);
-    }
+	//	토큰 생성
+	private String createToken(Member member) {
+		UserDetails userDetails = User.withUsername(member.getEmail()).password(member.getUuid())
+			.roles("USER").build();
+		return jwtTokenProvider.generateToken(userDetails);
+	}
 
-//	소셜 로그인
-    @Override
-    @Transactional
-    public TokenResponseDto snsLogin(MemberSnsLoginRequestDto memberSnsLoginRequestDto) {
+	//	소셜 로그인
+	@Override
+	@Transactional
+	public TokenResponseDto snsLogin(MemberSnsLoginRequestDto memberSnsLoginRequestDto) {
 //        SnsInfo snsInfo = snsInfoRepository.findBySnsIdAndSnsType(snsMemberLoginRequestDto.getSnsId(), snsMemberLoginRequestDto.getSnsType())
 //                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
-        Member member = memberRepository.findByEmail(memberSnsLoginRequestDto.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
-        if (member.isTerminationStatus()) {
-            throw new IllegalArgumentException("탈퇴한 회원입니다.");
-        }
+		Member member = memberRepository.findByEmail(memberSnsLoginRequestDto.getEmail())
+			.orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+		if (member.isTerminationStatus()) {
+			throw new IllegalArgumentException("탈퇴한 회원입니다.");
+		}
 
-        String token = createToken(member);
+		String token = createToken(member);
 
-        return TokenResponseDto.builder()
-                .accessToken(token)
-                .build();
-    }
+		return TokenResponseDto.builder()
+			.accessToken(token)
+			.build();
+	}
 
 	//회원정보 조회
 	@Override
@@ -319,6 +324,7 @@ public class MemberServiceImpl implements MemberService {
 		careerRepository.delete(findCareer);
 	}
 
+	//회원 경력 추가
 	@Override
 	@Transactional
 	public void addCareer(String uuid, MemberCareerAddRequestDto memberCareerAddDto) {
@@ -337,6 +343,7 @@ public class MemberServiceImpl implements MemberService {
 		careerRepository.save(career);
 	}
 
+	//회원 자격증 삭제
 	@Override
 	@Transactional
 	public void removeQualification(String uuid,
@@ -347,6 +354,7 @@ public class MemberServiceImpl implements MemberService {
 		qualificationRepository.delete(findQualification);
 	}
 
+	//회원 자격증 등록
 	@Override
 	@Transactional
 	public void addQualification(String uuid,
@@ -364,5 +372,26 @@ public class MemberServiceImpl implements MemberService {
 			.build();
 
 		qualificationRepository.save(qualification);
+	}
+
+	//회원 신고
+	@Override
+	@Transactional
+	public void addReport(String uuid, MemberReportRequestDto memberReportRequestDto) {
+		String reportedUuid = memberReportRequestDto.getReportedUuid();
+		memberRepository.findByUuid(reportedUuid)
+			.orElseThrow(() -> new IllegalArgumentException("신고할 회원을 찾을 수 없습니다."));
+		userReportRepository.findByReporterUuidAndReportedUuid(uuid, reportedUuid)
+			.ifPresent(report -> {
+				throw new IllegalArgumentException("이미 신고한 회원입니다.");
+			});
+		UserReport userReport = UserReport.builder()
+			.reporterUuid(uuid)
+			.reportedUuid(reportedUuid)
+			.reportReason(memberReportRequestDto.getReportReason())
+			.processingResult("처리중")
+			.build();
+
+		userReportRepository.save(userReport);
 	}
 }
