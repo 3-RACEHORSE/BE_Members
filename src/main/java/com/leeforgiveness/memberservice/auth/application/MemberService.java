@@ -5,6 +5,7 @@ import com.leeforgiveness.memberservice.auth.dto.MemberCareerDeleteRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberQualificationAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberQualificationDeleteRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberReportRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSaveCareerRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSaveRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSnsLoginRequestDto;
@@ -43,4 +44,6 @@ public interface MemberService {
 		MemberQualificationDeleteRequestDto memberQualificationDeleteDto);
 
 	void addQualification(String uuid, MemberQualificationAddRequestDto memberQualificationAddDto);
+
+	void addReport(String uuid, MemberReportRequestDto memberReportRequestDto);
 }

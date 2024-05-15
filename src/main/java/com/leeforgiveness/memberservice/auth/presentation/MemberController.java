@@ -7,6 +7,7 @@ import com.leeforgiveness.memberservice.auth.vo.MemberCareerDeleteRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberDetailResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberQualificationAddRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberQualificationDeleteRequestVo;
+import com.leeforgiveness.memberservice.auth.vo.MemberReportRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberSnsLoginRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberUpdateRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailResponseVo;
@@ -122,6 +123,13 @@ public class MemberController {
 		@RequestBody MemberQualificationAddRequestVo memberQualificationAddRequestVo) {
 		memberService.addQualification(uuid,
 			MemberQualificationAddRequestDto.voToDto(memberQualificationAddRequestVo));
+		return new SuccessResponse<>(null);
+	}
+
+	@PostMapping("/report")
+	@Operation(summary = "신고하기", description = "신고하기")
+	public SuccessResponse<Object> reportMember(@RequestHeader String uuid, @RequestBody MemberReportRequestVo memberReportRequestVo) {
+		memberService.addReport(uuid, MemberReportRequestDto.voToDto(memberReportRequestVo));
 		return new SuccessResponse<>(null);
 	}
 }
