@@ -13,11 +13,16 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class MemberSnsLoginRequestDto {
-	private String email;
 
-	public static MemberSnsLoginRequestDto voToDto(MemberSnsLoginRequestVo snsLoginRequestVo) {
-		return MemberSnsLoginRequestDto.builder()
-				.email(snsLoginRequestVo.getEmail())
-				.build();
-	}
+    private String email;
+    private String snsType;
+    private String snsId;
+
+    public static MemberSnsLoginRequestDto voToDto(MemberSnsLoginRequestVo snsLoginRequestVo) {
+        return MemberSnsLoginRequestDto.builder()
+            .email(snsLoginRequestVo.getEmail())
+            .snsType(snsLoginRequestVo.getSnsType())
+            .snsId(snsLoginRequestVo.getSnsId())
+            .build();
+    }
 }
