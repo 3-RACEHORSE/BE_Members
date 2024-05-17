@@ -2,13 +2,9 @@ spring:
   application:
     name: member-service
   profiles:
-    active: none
+    active: prod
   config:
     import: optional:configserver:http://43.203.131.185:8071
-
-  cloud:
-    config:
-      profile: ${PROFILE}
 
 encrypt:
   key: ${ENCRYPT_KEY}
