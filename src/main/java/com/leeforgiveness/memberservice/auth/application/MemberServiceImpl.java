@@ -137,8 +137,8 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	@Transactional
 	public TokenResponseDto snsLogin(MemberSnsLoginRequestDto memberSnsLoginRequestDto) {
-//        SnsInfo snsInfo = snsInfoRepository.findBySnsIdAndSnsType(snsMemberLoginRequestDto.getSnsId(), snsMemberLoginRequestDto.getSnsType())
-//                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        SnsInfo snsInfo = snsInfoRepository.findBySnsIdAndSnsType(memberSnsLoginRequestDto.getSnsId(), memberSnsLoginRequestDto.getSnsType())
+                .orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 		Member member = memberRepository.findByEmail(memberSnsLoginRequestDto.getEmail())
 			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 		if (member.isTerminationStatus()) {
@@ -250,12 +250,13 @@ public class MemberServiceImpl implements MemberService {
 			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 
 		List<Career> career = careerRepository.findByUuid(member.getUuid());
+		List<Qualification> qualification = qualificationRepository.findByUuid(member.getUuid());
 
 		List<InterestCategory> interestCategoryList = interestCategoryRepository.findByUuid(
 			member.getUuid());
 
 		List<String> interestCategories = new ArrayList<>();
-
+		List<String> qualifications = new ArrayList<>();
 		for (InterestCategory interestCategory : interestCategoryList) {
 			interestCategories.add(interestCategory.getCategoryName());
 		}
@@ -270,9 +271,22 @@ public class MemberServiceImpl implements MemberService {
 
 			careerInfoList.add(careerInfoMap);
 		}
+
+		List<Map<String, Object>> qualificationList = new ArrayList<>();
+
+		for (Qualification qualificationInfo : qualificationRepository.findByUuid(member.getUuid())) {
+			Map<String, Object> qulificationInfoMap = new HashMap<>();
+			qulificationInfoMap.put("name", qualificationInfo.getName());
+			qulificationInfoMap.put("issueDate", qualificationInfo.getIssueDate());
+			qulificationInfoMap.put("agency", qualificationInfo.getAgency());
+
+			qualificationList.add(qulificationInfoMap);
+		}
+
 		return SellerMemberDetailResponseDto.builder()
 			.name(member.getName())
-			.resumeInfo(careerInfoList)
+			.careerInfo(careerInfoList)
+			.qualificationInfo(qualificationList)
 			.handle(member.getHandle())
 			.watchList(interestCategories)
 			.profileImage(member.getProfileImage())
