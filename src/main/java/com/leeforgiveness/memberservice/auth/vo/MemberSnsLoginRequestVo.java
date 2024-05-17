@@ -7,5 +7,7 @@ import lombok.Getter;
 @Getter
 public class MemberSnsLoginRequestVo {
 
-	String email;
+    String email;
+	String snsType;
+	String snsId;
 }

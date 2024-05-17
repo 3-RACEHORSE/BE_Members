@@ -26,6 +26,8 @@ import com.leeforgiveness.memberservice.auth.infrastructure.QualificationReposit
 import com.leeforgiveness.memberservice.auth.infrastructure.SnsInfoRepository;
 
 import com.leeforgiveness.memberservice.auth.infrastructure.UserReportRepository;
+import com.leeforgiveness.memberservice.common.exception.CustomException;
+import com.leeforgiveness.memberservice.common.exception.ResponseStatus;
 import com.leeforgiveness.memberservice.common.security.JwtTokenProvider;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -63,7 +65,7 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public void duplicationEmail(String email) {
 		if (memberRepository.findByEmail(email).isPresent()) {
-			throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+			throw new CustomException(ResponseStatus.DUPLICATE_EMAIL);
 		}
 	}
 
@@ -73,7 +75,7 @@ public class MemberServiceImpl implements MemberService {
 	public void snsAddMember(SnsMemberAddRequestDto snsMemberAddRequestDto) {
 		if (snsInfoRepository.findBySnsIdAndSnsType(snsMemberAddRequestDto.getSnsId(),
 			snsMemberAddRequestDto.getSnsType()).isPresent()) {
-			throw new IllegalArgumentException("이미 가입된 회원입니다.");
+			throw new CustomException(ResponseStatus.DUPLICATED_MEMBERS);
 		}
 
 		duplicationEmail(snsMemberAddRequestDto.getEmail());
@@ -135,12 +137,12 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	@Transactional
 	public TokenResponseDto snsLogin(MemberSnsLoginRequestDto memberSnsLoginRequestDto) {
-//        SnsInfo snsInfo = snsInfoRepository.findBySnsIdAndSnsType(snsMemberLoginRequestDto.getSnsId(), snsMemberLoginRequestDto.getSnsType())
-//                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        SnsInfo snsInfo = snsInfoRepository.findBySnsIdAndSnsType(memberSnsLoginRequestDto.getSnsId(), memberSnsLoginRequestDto.getSnsType())
+                .orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 		Member member = memberRepository.findByEmail(memberSnsLoginRequestDto.getEmail())
-			.orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 		if (member.isTerminationStatus()) {
-			throw new IllegalArgumentException("탈퇴한 회원입니다.");
+			throw new CustomException(ResponseStatus.WITHDRAWAL_MEMBERS);
 		}
 
 		String token = createToken(member);
@@ -155,7 +157,7 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public MemberDetailResponseDto findMember(String uuid) {
 		Member member = memberRepository.findByUuid(uuid)
-			.orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ResponseStatus.NO_EXIST_MEMBERS));
 
 		List<InterestCategory> interestCategoryList = interestCategoryRepository.findByUuid(
 			member.getUuid());
@@ -206,7 +208,7 @@ public class MemberServiceImpl implements MemberService {
 	public void updateMember(String memberUuid,
 		MemberUpdateRequestDto memberUpdateRequestDto) {
 		Member member = memberRepository.findByUuid(memberUuid)
-			.orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 
 		memberRepository.save(Member.builder()
 			.id(member.getId())
@@ -226,7 +228,7 @@ public class MemberServiceImpl implements MemberService {
 	@Transactional
 	public void removeMember(String uuid) {
 		Member member = memberRepository.findByUuid(uuid)
-			.orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 
 		memberRepository.save(Member.builder()
 			.id(member.getId())
@@ -245,15 +247,16 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public SellerMemberDetailResponseDto findSellerMember(String handle) {
 		Member member = memberRepository.findByHandle(handle)
-			.orElseThrow(() -> new IllegalArgumentException("판매자를 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 
 		List<Career> career = careerRepository.findByUuid(member.getUuid());
+		List<Qualification> qualification = qualificationRepository.findByUuid(member.getUuid());
 
 		List<InterestCategory> interestCategoryList = interestCategoryRepository.findByUuid(
 			member.getUuid());
 
 		List<String> interestCategories = new ArrayList<>();
-
+		List<String> qualifications = new ArrayList<>();
 		for (InterestCategory interestCategory : interestCategoryList) {
 			interestCategories.add(interestCategory.getCategoryName());
 		}
@@ -268,9 +271,22 @@ public class MemberServiceImpl implements MemberService {
 
 			careerInfoList.add(careerInfoMap);
 		}
+
+		List<Map<String, Object>> qualificationList = new ArrayList<>();
+
+		for (Qualification qualificationInfo : qualificationRepository.findByUuid(member.getUuid())) {
+			Map<String, Object> qulificationInfoMap = new HashMap<>();
+			qulificationInfoMap.put("name", qualificationInfo.getName());
+			qulificationInfoMap.put("issueDate", qualificationInfo.getIssueDate());
+			qulificationInfoMap.put("agency", qualificationInfo.getAgency());
+
+			qualificationList.add(qulificationInfoMap);
+		}
+
 		return SellerMemberDetailResponseDto.builder()
 			.name(member.getName())
-			.resumeInfo(careerInfoList)
+			.careerInfo(careerInfoList)
+			.qualificationInfo(qualificationList)
 			.handle(member.getHandle())
 			.watchList(interestCategories)
 			.profileImage(member.getProfileImage())
@@ -321,7 +337,7 @@ public class MemberServiceImpl implements MemberService {
 	public void removeCareer(String uuid, MemberCareerDeleteRequestDto memberCareerDeleteDto) {
 		String job = memberCareerDeleteDto.getJob();
 		Career findCareer = careerRepository.findByUuidAndJob(uuid, job)
-			.orElseThrow(() -> new IllegalArgumentException("경력을 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ResponseStatus.CAREER_NOT_FOUND));
 		careerRepository.delete(findCareer);
 	}
 
@@ -332,7 +348,7 @@ public class MemberServiceImpl implements MemberService {
 		String job = memberCareerAddDto.getJob();
 		careerRepository.findByUuidAndJob(uuid, job)
 			.ifPresent(career -> {
-				throw new IllegalArgumentException("이미 등록된 경력입니다.");
+				throw new CustomException(ResponseStatus.DUPLICATE_CAREER);
 			});
 		Career career = Career.builder()
 			.uuid(uuid)
@@ -351,7 +367,7 @@ public class MemberServiceImpl implements MemberService {
 		MemberQualificationDeleteRequestDto memberQualificationDeleteDto) {
 		String name = memberQualificationDeleteDto.getName();
 		Qualification findQualification = qualificationRepository.findByUuidAndName(uuid, name)
-			.orElseThrow(() -> new IllegalArgumentException("자격증을 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ResponseStatus.CERTIFICATE_NOT_FOUND));
 		qualificationRepository.delete(findQualification);
 	}
 
@@ -363,7 +379,7 @@ public class MemberServiceImpl implements MemberService {
 		String name = memberQualificationAddRequestDto.getName();
 		qualificationRepository.findByUuidAndName(uuid, name)
 			.ifPresent(qualification -> {
-				throw new IllegalArgumentException("이미 등록된 자격증입니다.");
+				throw new CustomException(ResponseStatus.DUPLICATE_CERTIFICATE);
 			});
 		Qualification qualification = Qualification.builder()
 			.uuid(uuid)
@@ -381,10 +397,10 @@ public class MemberServiceImpl implements MemberService {
 	public void addReport(String uuid, MemberReportRequestDto memberReportRequestDto) {
 		String reportedUuid = memberReportRequestDto.getReportedUuid();
 		memberRepository.findByUuid(reportedUuid)
-			.orElseThrow(() -> new IllegalArgumentException("신고할 회원을 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 		userReportRepository.findByReporterUuidAndReportedUuid(uuid, reportedUuid)
 			.ifPresent(report -> {
-				throw new IllegalArgumentException("이미 신고한 회원입니다.");
+				throw new CustomException(ResponseStatus.DUPLICATE_REPORT);
 			});
 		UserReport userReport = UserReport.builder()
 			.reporterUuid(uuid)

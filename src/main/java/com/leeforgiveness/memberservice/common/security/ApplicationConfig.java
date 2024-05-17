@@ -2,6 +2,7 @@ package com.leeforgiveness.memberservice.common.security;
 
 import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.common.exception.ExceptionResponse;
+import com.leeforgiveness.memberservice.common.exception.CustomException;
 import com.leeforgiveness.memberservice.common.exception.ResponseStatus;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,6 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Configuration
 @RequiredArgsConstructor
@@ -30,7 +30,7 @@ public class ApplicationConfig {
 				new ArrayList<>()
 			))
 			.orElseThrow(
-				() -> new FailedException(new ExceptionResponse(ResponseStatus.USER_NOT_FOUND)));
+				() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 	}
 
 	@Bean
