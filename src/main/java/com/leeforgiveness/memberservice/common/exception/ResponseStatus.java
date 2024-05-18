@@ -90,8 +90,12 @@ public enum ResponseStatus {
     /**
      * Category Service Error 
      */
-    NO_TINY_CATEGORY(400, "존재하지 않는 카테고리입니다");
+    NO_TINY_CATEGORY(400, "존재하지 않는 카테고리입니다"),
 
+    //subscribe
+    DUPLICATE_SUBSCRIBE(400, "이미 구독 중입니다."),
+    UNSUBSCRIBED_SELLER(400, "구독하지 않은 판매자입니다."),
+    OUT_OF_PAGE_RANGE(400, "페이지 범위를 벗어났습니다.");
 
     private final int code;
     private final String message;
