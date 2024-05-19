@@ -1,7 +1,7 @@
 package com.leeforgiveness.memberservice.subscribe.domain;
 
 import com.leeforgiveness.memberservice.common.BaseTimeEntity;
-import com.leeforgiveness.memberservice.subscribe.SubscribeState;
+import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -26,6 +26,7 @@ public class SellerSubscription extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "seller_subscription_id")
     private Long id;
     @Column(name = "subscriber_uuid", nullable = false)
     private String subscriberUuid;

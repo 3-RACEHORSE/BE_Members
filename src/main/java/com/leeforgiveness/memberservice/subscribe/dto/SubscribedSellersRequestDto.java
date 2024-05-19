@@ -1,6 +1,6 @@
 package com.leeforgiveness.memberservice.subscribe.dto;
 
-import com.leeforgiveness.memberservice.subscribe.PageState;
+import com.leeforgiveness.memberservice.subscribe.state.PageState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

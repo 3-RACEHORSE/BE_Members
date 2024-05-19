@@ -2,8 +2,8 @@ package com.leeforgiveness.memberservice.subscribe.application;
 
 import com.leeforgiveness.memberservice.common.exception.CustomException;
 import com.leeforgiveness.memberservice.common.exception.ResponseStatus;
-import com.leeforgiveness.memberservice.subscribe.PageState;
-import com.leeforgiveness.memberservice.subscribe.SubscribeState;
+import com.leeforgiveness.memberservice.subscribe.state.PageState;
+import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import com.leeforgiveness.memberservice.subscribe.domain.SellerSubscription;
 import com.leeforgiveness.memberservice.subscribe.dto.SellerSubscribeRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersRequestDto;
@@ -125,7 +125,7 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
 
         return SubscribedSellersResponseDto.builder()
             .sellerHandles(sellerHandles)
-            .currentPage(subscribedSellersRequestDto.getPage())
+            .currentPage(page)
             .hasNext(sellerSubscriptionPage.hasNext())
             .build();
     }

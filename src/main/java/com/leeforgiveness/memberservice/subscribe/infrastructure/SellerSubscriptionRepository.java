@@ -1,6 +1,6 @@
 package com.leeforgiveness.memberservice.subscribe.infrastructure;
 
-import com.leeforgiveness.memberservice.subscribe.SubscribeState;
+import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import com.leeforgiveness.memberservice.subscribe.domain.SellerSubscription;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
