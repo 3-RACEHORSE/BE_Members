@@ -1,7 +1,6 @@
 package com.leeforgiveness.memberservice.subscribe.dto;
 
 import com.leeforgiveness.memberservice.subscribe.PageState;
-import com.leeforgiveness.memberservice.subscribe.vo.SubscribedSellersRequestVo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,23 +18,21 @@ public class SubscribedSellersRequestDto {
     private int page;
     private int size;
 
-    public static SubscribedSellersRequestDto voToDto(
-        SubscribedSellersRequestVo subscribedSellersRequestVo) {
-        int requestPage = PageState.DEFAULT.getPage();
-        int requestSize = PageState.DEFAULT.getSize();
+    public static SubscribedSellersRequestDto validate(
+        String uuid, Integer page, Integer size) {
 
-        if (subscribedSellersRequestVo.getPage() != requestPage) {
-            requestPage = subscribedSellersRequestVo.getPage();
+        if (page == null || page < 0) {
+            page = PageState.DEFAULT.getPage();
         }
 
-        if (subscribedSellersRequestVo.getSize() != requestSize) {
-            requestSize = subscribedSellersRequestVo.getSize();
+        if (size == null || size <= 0) {
+            size = PageState.DEFAULT.getSize();
         }
 
         return SubscribedSellersRequestDto.builder()
-            .subscriberUuid(subscribedSellersRequestVo.getUuid())
-            .page(requestPage)
-            .size(requestSize)
+            .subscriberUuid(uuid)
+            .page(page)
+            .size(size)
             .build();
     }
 }
