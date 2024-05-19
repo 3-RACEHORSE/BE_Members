@@ -12,9 +12,9 @@ public class SellerSubscribeRequestDto {
     private String subscriberUuid;
     private String sellerHandle;
 
-    public static SellerSubscribeRequestDto voToDto(SellerSubscribeRequestVo sellerSubscribeRequestVo) {
+    public static SellerSubscribeRequestDto voToDto(String uuid,SellerSubscribeRequestVo sellerSubscribeRequestVo) {
         return SellerSubscribeRequestDto.builder()
-                .subscriberUuid(sellerSubscribeRequestVo.getUuid())
+                .subscriberUuid(uuid)
                 .sellerHandle(sellerSubscribeRequestVo.getSellerHandle())
                 .build();
     }
