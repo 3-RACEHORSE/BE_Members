@@ -9,6 +9,7 @@ import com.leeforgiveness.memberservice.subscribe.dto.SellerSubscribeRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.SellerSubscriptionRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -93,16 +94,15 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
     @Transactional(readOnly = true)
     public SubscribedSellersResponseDto getSubscribedSellerHandles(
         SubscribedSellersRequestDto subscribedSellersRequestDto) {
-        int page = PageState.DEFAULT.getPage();
-        int size = PageState.DEFAULT.getSize();
+        int page = subscribedSellersRequestDto.getPage();
+        int size = subscribedSellersRequestDto.getSize();
 
-        if (page != subscribedSellersRequestDto.getPage()) {
-            page = subscribedSellersRequestDto.getPage();
+        if (page < 0) {
+            page = PageState.DEFAULT.getPage();
         }
 
-        if (size != subscribedSellersRequestDto.getSize()
-            && subscribedSellersRequestDto.getSize() > 0) {
-            size = subscribedSellersRequestDto.getSize();
+        if (size <= 0) {
+            size = PageState.DEFAULT.getSize();
         }
 
         Page<SellerSubscription> sellerSubscriptionPage = this.sellerSubscriptionRepository.findBySubscriberUuidAndState(
@@ -111,11 +111,16 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
             PageRequest.of(page, size)
         );
 
-        if (sellerSubscriptionPage.getTotalPages() > 0 && sellerSubscriptionPage.isEmpty()) {
-            throw new CustomException(ResponseStatus.OUT_OF_PAGE_RANGE);
+        List<String> sellerHandles = new ArrayList<>();
+        if (sellerSubscriptionPage.isEmpty()) {
+            return SubscribedSellersResponseDto.builder()
+                .sellerHandles(sellerHandles)
+                .currentPage(PageState.DEFAULT.getPage())
+                .hasNext(sellerSubscriptionPage.hasNext())
+                .build();
         }
 
-        List<String> sellerHandles = sellerSubscriptionPage.get()
+        sellerHandles = sellerSubscriptionPage.get()
             .map(SellerSubscription::getSellerHandle).toList();
 
         return SubscribedSellersResponseDto.builder()
