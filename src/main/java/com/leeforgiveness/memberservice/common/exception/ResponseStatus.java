@@ -63,6 +63,8 @@ public enum ResponseStatus {
     DUPLICATE_SNS_MEMBERS(400, "이미 사용중인 SNS 회원입니다."),
     NO_EXIST_SNS_MEMBERS(400, "가입되지 않은 SNS 멤버 정보입니다."),
 
+    DUPLICATE_HANDLE(400, "이미 사용중인 핸들입니다."),
+
     /**
      * 경력
      */
