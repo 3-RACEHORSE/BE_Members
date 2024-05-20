@@ -24,13 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @Tag(name = "판매자 구독 서비스", description = "판매자 구독 API")
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/authorization/subscription/seller")
 @RequiredArgsConstructor
 public class SellerSubscribeController {
 
     private final SellerSubscriptionService sellerSubscriptionService;
 
-    @PostMapping("/subscription/seller")
+    @PostMapping
     @Operation(summary = "판매자 구독", description = "판매자 핸들을 받아 구독합니다.")
     public SuccessResponse<Object> subscribe(@RequestHeader String uuid, @RequestBody
     SellerSubscribeRequestVo sellerSubscribeRequestVo) {
@@ -39,7 +39,7 @@ public class SellerSubscribeController {
         return new SuccessResponse<>(null);
     }
 
-    @PatchMapping("/subscription/seller")
+    @PatchMapping
     @Operation(summary = "판매자 구독 취소", description = "구독했던 판매자의 구독을 취소합니다.")
     public SuccessResponse<Object> unsubscribe(@RequestHeader String uuid,
         @RequestBody SellerSubscribeRequestVo sellerSubscribeRequestVo) {
@@ -48,7 +48,7 @@ public class SellerSubscribeController {
         return new SuccessResponse<>(null);
     }
 
-    @GetMapping("/subscription/seller")
+    @GetMapping
     @Operation(summary = "판매자 구독 조회", description = "판매자 구독내역을 페이지로 조회합니다.")
     @ResponseBody
     public SuccessResponse<SubscribedSellersResponseVo> getSellerSubscribe(@RequestHeader String uuid,

@@ -23,13 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @Tag(name = "경매글 구독 서비스", description = "경매글 구독 API")
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/authorization/subscription/auction")
 @RequiredArgsConstructor
 public class AuctionSubscriptionController {
 
     private final AuctionSubscriptionService auctionSubscriptionService;
 
-    @PostMapping("/subscription/auction")
+    @PostMapping
     @Operation(summary = "경매글 구독", description = "경매글 uuid를 받아 구독합니다.")
     public SuccessResponse<Object> subscribe(
         @RequestHeader String uuid,
@@ -39,7 +39,7 @@ public class AuctionSubscriptionController {
         return new SuccessResponse<>(null);
     }
 
-    @PatchMapping("/subscription/auction")
+    @PatchMapping
     @Operation(summary = "경매글 구독 취소", description = "구독했던 경매글의 구독을 취소합니다.")
     public SuccessResponse<Object> unsubscribe(
         @RequestHeader String uuid,
@@ -49,7 +49,7 @@ public class AuctionSubscriptionController {
         return new SuccessResponse<>(null);
     }
 
-    @GetMapping("/subscription/auction")
+    @GetMapping
     @Operation(summary = "경매글 구독 조회", description = "경매글 구독내역을 페이지로 조회합니다.")
     public SuccessResponse<SubscribedAuctionsResponseVo> getAuctionSubscribe(
         @RequestHeader String uuid,
