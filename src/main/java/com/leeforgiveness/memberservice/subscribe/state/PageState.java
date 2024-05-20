@@ -1,4 +1,4 @@
-package com.leeforgiveness.memberservice.subscribe;
+package com.leeforgiveness.memberservice.subscribe.state;
 
 import lombok.Getter;
 

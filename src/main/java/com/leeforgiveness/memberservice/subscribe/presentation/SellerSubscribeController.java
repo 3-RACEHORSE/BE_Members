@@ -4,7 +4,9 @@ import com.leeforgiveness.memberservice.common.SuccessResponse;
 import com.leeforgiveness.memberservice.subscribe.application.SellerSubscriptionService;
 import com.leeforgiveness.memberservice.subscribe.dto.SellerSubscribeRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersRequestDto;
+import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersResponseDto;
 import com.leeforgiveness.memberservice.subscribe.vo.SellerSubscribeRequestVo;
+import com.leeforgiveness.memberservice.subscribe.vo.SubscribedSellersResponseVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
-@Tag(name = "구독", description = "구독 API")
+@Tag(name = "판매자 구독 서비스", description = "판매자 구독 API")
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
@@ -49,9 +51,10 @@ public class SellerSubscribeController {
     @GetMapping("/subscription/seller")
     @Operation(summary = "판매자 구독 조회", description = "판매자 구독내역을 페이지로 조회합니다.")
     @ResponseBody
-    public SuccessResponse<Object> getSellerSubscribe(@RequestHeader String uuid,
+    public SuccessResponse<SubscribedSellersResponseVo> getSellerSubscribe(@RequestHeader String uuid,
         @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size) {
-        return new SuccessResponse<>(this.sellerSubscriptionService.getSubscribedSellerHandles(
-            SubscribedSellersRequestDto.validate(uuid, page, size)));
+        return new SuccessResponse<>(
+            SubscribedSellersResponseDto.dtoToVo(this.sellerSubscriptionService.getSubscribedSellerHandles(
+                SubscribedSellersRequestDto.validate(uuid, page, size))));
     }
 }

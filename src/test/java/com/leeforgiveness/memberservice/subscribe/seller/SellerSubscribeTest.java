@@ -6,8 +6,8 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 
 import com.leeforgiveness.memberservice.common.exception.CustomException;
-import com.leeforgiveness.memberservice.subscribe.PageState;
-import com.leeforgiveness.memberservice.subscribe.SubscribeState;
+import com.leeforgiveness.memberservice.subscribe.state.PageState;
+import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import com.leeforgiveness.memberservice.subscribe.application.SellerSubscriptionServiceImpl;
 import com.leeforgiveness.memberservice.subscribe.domain.SellerSubscription;
 import com.leeforgiveness.memberservice.subscribe.dto.SellerSubscribeRequestDto;

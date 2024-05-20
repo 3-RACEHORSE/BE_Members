@@ -4,23 +4,21 @@ import com.leeforgiveness.memberservice.subscribe.state.PageState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SubscribedSellersRequestDto {
+public class SubscribedAuctionsRequestDto {
 
     private String subscriberUuid;
     private int page;
     private int size;
 
-    public static SubscribedSellersRequestDto validate(
-        String uuid, Integer page, Integer size) {
-
+    public static SubscribedAuctionsRequestDto validate(
+        String uuid, Integer page, Integer size
+    ) {
         if (page == null || page < 0) {
             page = PageState.DEFAULT.getPage();
         }
@@ -29,7 +27,7 @@ public class SubscribedSellersRequestDto {
             size = PageState.DEFAULT.getSize();
         }
 
-        return SubscribedSellersRequestDto.builder()
+        return SubscribedAuctionsRequestDto.builder()
             .subscriberUuid(uuid)
             .page(page)
             .size(size)
