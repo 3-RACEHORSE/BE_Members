@@ -1,20 +1,21 @@
 package com.leeforgiveness.memberservice.subscribe.application;
 
+import com.leeforgiveness.memberservice.auth.domain.Member;
+import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.common.exception.CustomException;
 import com.leeforgiveness.memberservice.common.exception.ResponseStatus;
-import com.leeforgiveness.memberservice.subscribe.state.PageState;
-import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import com.leeforgiveness.memberservice.subscribe.domain.SellerSubscription;
 import com.leeforgiveness.memberservice.subscribe.dto.SellerSubscribeRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.SellerSubscriptionRepository;
+import com.leeforgiveness.memberservice.subscribe.state.PageState;
+import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -26,18 +27,38 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerSubscriptionServiceImpl implements SellerSubscriptionService {
 
     private final SellerSubscriptionRepository sellerSubscriptionRepository;
+    private final MemberRepository memberRepository;
+
+    // 판매자의 핸들로 uuid 조회
+    private String getSellerUuid(String sellerHandle) {
+        try {
+            Optional<Member> memberOptional = memberRepository.findByHandle(sellerHandle);
+            if (memberOptional.isEmpty()) {
+                throw new CustomException(ResponseStatus.USER_NOT_FOUND);
+            }
+            return memberOptional.get().getUuid();
+        } catch (Exception e) {
+            log.error("Error while reading member:", e);
+            throw new CustomException(ResponseStatus.DATABASE_READ_FAIL);
+        }
+    }
 
     //구독
     @Override
     @Transactional
     public void subscribeSeller(SellerSubscribeRequestDto sellerSubscribeRequestDto) {
+        String subscriberUuid = sellerSubscribeRequestDto.getSubscriberUuid();
+        String sellerHandle = sellerSubscribeRequestDto.getSellerHandle();
+
+        String sellerUuid = getSellerUuid(sellerHandle);
+
         Optional<SellerSubscription> sellerSubscriptionOptional = getSellerSubscription(
-            sellerSubscribeRequestDto);
+            subscriberUuid, sellerUuid);
 
         if (sellerSubscriptionOptional.isEmpty()) {
             subscribeNewSeller(SellerSubscription.builder()
-                .subscriberUuid(sellerSubscribeRequestDto.getSubscriberUuid())
-                .sellerHandle(sellerSubscribeRequestDto.getSellerHandle())
+                .subscriberUuid(subscriberUuid)
+                .sellerUuid(sellerUuid)
                 .build());
         } else if (sellerSubscriptionOptional.get().getState() == SubscribeState.SUBSCRIBE) {
             throw new CustomException(ResponseStatus.DUPLICATE_SUBSCRIBE);
@@ -51,7 +72,7 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
         SellerSubscription updateSellerSubscription = SellerSubscription.builder()
             .id(sellerSubscription.getId())
             .subscriberUuid(sellerSubscription.getSubscriberUuid())
-            .sellerHandle(sellerSubscription.getSellerHandle())
+            .sellerUuid(sellerSubscription.getSellerUuid())
             .state(SubscribeState.SUBSCRIBE)
             .build();
         try {
@@ -76,8 +97,13 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
     @Override
     @Transactional
     public void unsubscribeSeller(SellerSubscribeRequestDto sellerSubscribeRequestDto) {
-        Optional<SellerSubscription> sellerSubscriptionOptional = getSellerSubscription(
-            sellerSubscribeRequestDto);
+        String subscriberUuid = sellerSubscribeRequestDto.getSubscriberUuid();
+        String sellerHandle = sellerSubscribeRequestDto.getSellerHandle();
+
+        String sellerUuid = getSellerUuid(sellerHandle);
+
+        Optional<SellerSubscription> sellerSubscriptionOptional = getSellerSubscription(subscriberUuid, sellerUuid);
+
         if (sellerSubscriptionOptional.isEmpty()
             || sellerSubscriptionOptional.get().getState() == SubscribeState.UNSUBSCRIBE) {
             // 구독한 적이 없거나 구독 취소했던 판매자를 구독 취소하려하면 예외 발생 시킴
@@ -89,7 +115,7 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
                 this.sellerSubscriptionRepository.save(SellerSubscription.builder()
                     .id(sellerSubscription.getId())
                     .subscriberUuid(sellerSubscription.getSubscriberUuid())
-                    .sellerHandle(sellerSubscription.getSellerHandle())
+                    .sellerUuid(sellerSubscription.getSellerUuid())
                     .state(SubscribeState.UNSUBSCRIBE)
                     .build()
                 );
@@ -101,11 +127,10 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
     }
 
     private Optional<SellerSubscription> getSellerSubscription(
-        SellerSubscribeRequestDto sellerSubscribeRequestDto) {
+        String subscriberUuid, String sellerUuid) {
         try {
-            return sellerSubscriptionRepository.findBySubscriberUuidAndSellerHandle(
-                sellerSubscribeRequestDto.getSubscriberUuid(),
-                sellerSubscribeRequestDto.getSellerHandle());
+            return sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
+                subscriberUuid, sellerUuid);
         } catch (Exception e) {
             log.error("Error while getting seller_subscription:", e);
             throw new CustomException(ResponseStatus.DATABASE_READ_FAIL);
@@ -142,6 +167,7 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
         }
 
         List<String> sellerHandles = new ArrayList<>();
+
         if (sellerSubscriptionPage.isEmpty()) {
             return SubscribedSellersResponseDto.builder()
                 .sellerHandles(sellerHandles)
@@ -150,13 +176,32 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
                 .build();
         }
 
-        sellerHandles = sellerSubscriptionPage.get()
-            .map(SellerSubscription::getSellerHandle).toList();
+        // 판매자 uuid 리스트를 핸들 리스트로 변환
+        List<String> sellerUuids = sellerSubscriptionPage.get()
+            .map(SellerSubscription::getSellerUuid).toList();
+
+        sellerHandles = getSellers(sellerUuids).stream().map(Member::getHandle).toList();
 
         return SubscribedSellersResponseDto.builder()
             .sellerHandles(sellerHandles)
             .currentPage(page)
             .hasNext(sellerSubscriptionPage.hasNext())
             .build();
+    }
+
+    // 판매자 uuid 리스트로 회원 조회
+    private List<Member> getSellers(List<String> sellerUuids) {
+        try {
+            List<Member> sellers = this.memberRepository.findByUuidIn(sellerUuids);
+
+            if (sellers.size() != sellerUuids.size()) {
+                throw new CustomException(ResponseStatus.NO_MATCHED_MEMBERS);
+            }
+
+            return sellers;
+        } catch (Exception e) {
+            log.error("Error while getting sellers:", e);
+            throw new CustomException(ResponseStatus.DATABASE_READ_FAIL);
+        }
     }
 }
