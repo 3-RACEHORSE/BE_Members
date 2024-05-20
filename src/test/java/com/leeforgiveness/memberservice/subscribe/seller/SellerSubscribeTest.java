@@ -5,17 +5,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 
+import com.leeforgiveness.memberservice.auth.domain.Member;
+import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
+import com.leeforgiveness.memberservice.common.GenerateRandom;
 import com.leeforgiveness.memberservice.common.exception.CustomException;
-import com.leeforgiveness.memberservice.subscribe.state.PageState;
-import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import com.leeforgiveness.memberservice.subscribe.application.SellerSubscriptionServiceImpl;
 import com.leeforgiveness.memberservice.subscribe.domain.SellerSubscription;
 import com.leeforgiveness.memberservice.subscribe.dto.SellerSubscribeRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.SellerSubscriptionRepository;
+import com.leeforgiveness.memberservice.subscribe.state.PageState;
+import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
@@ -33,36 +35,58 @@ public class SellerSubscribeTest {
 
     private SellerSubscriptionRepository sellerSubscriptionRepository = Mockito.mock(
         SellerSubscriptionRepository.class);
+    private MemberRepository memberRepository = Mockito.mock(MemberRepository.class);
+
     private SellerSubscriptionServiceImpl sellerSubscriptionService;
+
+    private String subscriberUuid;
+    private String sellerUuid;
+    private String sellerHandle;
+    private Member mockMember;
 
     @BeforeEach
     public void setUp() {
-        sellerSubscriptionService = new SellerSubscriptionServiceImpl(sellerSubscriptionRepository);
+        sellerSubscriptionService = new SellerSubscriptionServiceImpl(
+            sellerSubscriptionRepository, memberRepository);
+
+        subscriberUuid = GenerateRandom.subscriberUuid();
+        sellerUuid = GenerateRandom.sellerUuid();
+        sellerHandle = GenerateRandom.sellerHandle();
+        mockMember = Member.builder()
+            .id(1L)
+            .email("test@example.com")
+            .name("skyhorse")
+            .phoneNum("01012345678")
+            .uuid(sellerUuid)
+            .handle(sellerHandle)
+            .terminationStatus(false)
+            .build();
     }
 
     @Test
     @DisplayName("사용자가 구독한 적이 없던 판매자를 구독한다.")
     void subscribeNewSellerTest() {
         //given
-        String subscriberUuid = "alskdjfh";
-        String sellerHandle = "seller-1";
+        Mockito.when(memberRepository.findByHandle(sellerHandle))
+            .thenReturn(Optional.of(mockMember));
 
         Mockito.when(
-                sellerSubscriptionRepository.findBySubscriberUuidAndSellerHandle(subscriberUuid,
-                    sellerHandle))
+                sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
+                    subscriberUuid, sellerUuid))
             .thenReturn(Optional.empty());
 
         //when
         sellerSubscriptionService.subscribeSeller(
-            SellerSubscribeRequestDto.builder().subscriberUuid(subscriberUuid)
+            SellerSubscribeRequestDto.builder()
+                .subscriberUuid(subscriberUuid)
                 .sellerHandle(sellerHandle).build());
 
         //then
-        verify(sellerSubscriptionRepository).findBySubscriberUuidAndSellerHandle(subscriberUuid,
-            sellerHandle);
+        verify(sellerSubscriptionRepository).findBySubscriberUuidAndSellerUuid(
+            subscriberUuid, sellerUuid);
         verify(sellerSubscriptionRepository).save(argThat(argument ->
             argument.getSubscriberUuid().equals(subscriberUuid) &&
-                argument.getSellerHandle().equals(sellerHandle) &&
+                argument.getSellerUuid().equals(sellerUuid) &&
                 //state는 레코드가 데이터베이스에 저장될때 기본값 SUBSCRIBE로 정해지므로 서비스 로직에서는 null임
                 argument.getState() == null
         ));
@@ -72,32 +96,33 @@ public class SellerSubscribeTest {
     @DisplayName("사용자가 구독 취소했던 판매자를 다시 구독한다.")
     void subscribeSellerAgainTest() {
         //given
-        String subscriberUuid = "qpwoeiru";
-        String sellerHandle = "seller-2";
+        Mockito.when(memberRepository.findByHandle(sellerHandle))
+            .thenReturn(Optional.of(mockMember));
 
         SellerSubscription sellerSubscription = SellerSubscription.builder()
             .id(1L)
             .subscriberUuid(subscriberUuid)
-            .sellerHandle(sellerHandle)
+            .sellerUuid(sellerUuid)
             .state(SubscribeState.UNSUBSCRIBE)
             .build();
 
         Mockito.when(
-            sellerSubscriptionRepository.findBySubscriberUuidAndSellerHandle(subscriberUuid,
-                sellerHandle)).thenReturn(Optional.of(sellerSubscription));
+            sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
+                subscriberUuid, sellerUuid)).thenReturn(Optional.of(sellerSubscription));
 
         //when
         sellerSubscriptionService.subscribeSeller(
-            SellerSubscribeRequestDto.builder().subscriberUuid(subscriberUuid)
+            SellerSubscribeRequestDto.builder()
+                .subscriberUuid(subscriberUuid)
                 .sellerHandle(sellerHandle).build());
 
         //then
-        verify(sellerSubscriptionRepository).findBySubscriberUuidAndSellerHandle(subscriberUuid,
-            sellerHandle);
+        verify(sellerSubscriptionRepository).findBySubscriberUuidAndSellerUuid(
+            subscriberUuid, sellerUuid);
         verify(sellerSubscriptionRepository).save(argThat(argument ->
             argument.getId().equals(sellerSubscription.getId()) &&
                 argument.getSubscriberUuid().equals(sellerSubscription.getSubscriberUuid()) &&
-                argument.getSellerHandle().equals(sellerSubscription.getSellerHandle()) &&
+                argument.getSellerUuid().equals(sellerSubscription.getSellerUuid()) &&
                 argument.getState().equals(SubscribeState.SUBSCRIBE)
         ));
     }
@@ -106,13 +131,13 @@ public class SellerSubscribeTest {
     @DisplayName("사용자가 이미 구독했던 판매자를 구독하면 예외를 발생시킨다.")
     void subscribeAlreadySubscribedSellerExceptionTest() {
         //given
-        String subscriberUuid = "eidnveofp";
-        String sellerHandle = "seller-3";
+        Mockito.when(memberRepository.findByHandle(sellerHandle))
+            .thenReturn(Optional.of(mockMember));
 
         Mockito.when(
-                sellerSubscriptionRepository.findBySubscriberUuidAndSellerHandle(subscriberUuid,
-                    sellerHandle))
-            .thenReturn(Optional.of(new SellerSubscription(1L, subscriberUuid, sellerHandle,
+                sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
+                    subscriberUuid, sellerUuid))
+            .thenReturn(Optional.of(new SellerSubscription(1L, subscriberUuid, sellerUuid,
                 SubscribeState.SUBSCRIBE)));
 
         //when & then
@@ -125,19 +150,19 @@ public class SellerSubscribeTest {
     @DisplayName("사용자가 구독 중인 판매자를 구독취소한다.")
     void unsubscribeSellerTest() {
         //given
-        String subscriberUuid = "iwevbnoirg";
-        String sellerHandle = "seller-4";
+        Mockito.when(memberRepository.findByHandle(sellerHandle))
+            .thenReturn(Optional.of(mockMember));
 
         SellerSubscription sellerSubscription = SellerSubscription.builder()
             .id(1L)
             .subscriberUuid(subscriberUuid)
-            .sellerHandle(sellerHandle)
+            .sellerUuid(sellerUuid)
             .state(SubscribeState.SUBSCRIBE)
             .build();
 
         Mockito.when(
-                sellerSubscriptionRepository.findBySubscriberUuidAndSellerHandle(subscriberUuid,
-                    sellerHandle))
+                sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
+                    subscriberUuid, sellerUuid))
             .thenReturn(Optional.of(sellerSubscription));
 
         //when
@@ -147,12 +172,12 @@ public class SellerSubscribeTest {
         );
 
         //then
-        verify(sellerSubscriptionRepository).findBySubscriberUuidAndSellerHandle(subscriberUuid,
-            sellerHandle);
+        verify(sellerSubscriptionRepository).findBySubscriberUuidAndSellerUuid(
+            subscriberUuid, sellerUuid);
         verify(sellerSubscriptionRepository).save(argThat(argument ->
             argument.getId().equals(sellerSubscription.getId()) &&
                 argument.getSubscriberUuid().equals(sellerSubscription.getSubscriberUuid()) &&
-                argument.getSellerHandle().equals(sellerSubscription.getSellerHandle()) &&
+                argument.getSellerUuid().equals(sellerSubscription.getSellerUuid()) &&
                 argument.getState().equals(SubscribeState.UNSUBSCRIBE)
         ));
     }
@@ -161,12 +186,12 @@ public class SellerSubscribeTest {
     @DisplayName("사용자가 구독한 적이 없는 판매자를 구독취소하면 예외를 발생시킨다.")
     void unsubscribeNewSellerExceptionTest() {
         //given
-        String subscriberUuid = "zpxocnefe";
-        String sellerHandle = "seller-5";
+        Mockito.when(memberRepository.findByHandle(sellerHandle))
+            .thenReturn(Optional.of(mockMember));
 
         Mockito.when(
-            sellerSubscriptionRepository.findBySubscriberUuidAndSellerHandle(subscriberUuid,
-                sellerHandle)).thenReturn(Optional.empty());
+            sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
+                subscriberUuid, sellerUuid)).thenReturn(Optional.empty());
 
         //when & then
         assertThrows(CustomException.class, () -> {
@@ -180,19 +205,19 @@ public class SellerSubscribeTest {
     @DisplayName("사용자가 구독 취소했던 판매자를 구독취소하면 예외를 발생시킨다.")
     void unsubscribeAlreadyUnsubscribedSellerExceptionTest() {
         //given
-        String subscriberUuid = "eidvbjrildfj";
-        String sellerHandle = "seller-6";
+        Mockito.when(memberRepository.findByHandle(sellerHandle))
+            .thenReturn(Optional.of(mockMember));
 
         SellerSubscription sellerSubscription = SellerSubscription.builder()
             .id(1L)
             .subscriberUuid(subscriberUuid)
-            .sellerHandle(sellerHandle)
+            .sellerUuid(sellerUuid)
             .state(SubscribeState.UNSUBSCRIBE)
             .build();
 
         Mockito.when(
-                sellerSubscriptionRepository.findBySubscriberUuidAndSellerHandle(subscriberUuid,
-                    sellerHandle))
+                sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
+                    subscriberUuid, sellerUuid))
             .thenReturn(Optional.of(sellerSubscription));
 
         //when & then
@@ -207,16 +232,22 @@ public class SellerSubscribeTest {
     @DisplayName("사용자가 쿼리 스트링을 넘겨주지 않고 판매자 구독 내역을 조회한다.")
     void getSubscribedSellerHandlesWithNoneQueryStringTest() {
         //given
-        String subscriberUuid = "e9fdjhbigot3";
         SubscribedSellersRequestDto subscribedSellersRequestDto = SubscribedSellersRequestDto.builder()
             .subscriberUuid(subscriberUuid)
             .build();
 
+        // 기본값만큼 조회한다고 가정
+        Page<SellerSubscription> sellerSubscriptionPage = getSellerSubscriptionsPage(subscriberUuid,
+            PageState.DEFAULT.getPage(),
+            PageState.DEFAULT.getSize());
         Mockito.when(sellerSubscriptionRepository.findBySubscriberUuidAndState(
             subscribedSellersRequestDto.getSubscriberUuid(),
             SubscribeState.SUBSCRIBE,
             PageRequest.of(PageState.DEFAULT.getPage(), PageState.DEFAULT.getSize())
-        )).thenReturn(getSellerSubscriptionsPage(subscriberUuid));
+        )).thenReturn(sellerSubscriptionPage);
+
+        Mockito.when(memberRepository.findByUuidIn(getSellerUuids(sellerSubscriptionPage)))
+            .thenReturn(getMockMembers(sellerSubscriptionPage));
 
         //when
         SubscribedSellersResponseDto subscribedSellersResponseDto = sellerSubscriptionService.getSubscribedSellerHandles(
@@ -227,22 +258,7 @@ public class SellerSubscribeTest {
             PageState.DEFAULT.getSize());
         assertThat(subscribedSellersResponseDto.getCurrentPage()).isEqualTo(
             PageState.DEFAULT.getPage());
-        assertThat(subscribedSellersResponseDto.getHasNext()).isFalse();
-    }
-
-    private static @NotNull Page<SellerSubscription> getSellerSubscriptionsPage(
-        String subscriberUuid) {
-        List<SellerSubscription> subscriptions = Arrays.asList(
-            new SellerSubscription(1L, subscriberUuid, "seller-7", SubscribeState.SUBSCRIBE),
-            new SellerSubscription(2L, subscriberUuid, "seller-8", SubscribeState.SUBSCRIBE),
-            new SellerSubscription(3L, subscriberUuid, "seller-9", SubscribeState.SUBSCRIBE),
-            new SellerSubscription(4L, subscriberUuid, "seller-10", SubscribeState.SUBSCRIBE),
-            new SellerSubscription(5L, subscriberUuid, "seller-11", SubscribeState.SUBSCRIBE)
-        );
-
-        return new PageImpl<>(subscriptions,
-            PageRequest.of(PageState.DEFAULT.getPage(), PageState.DEFAULT.getSize()),
-            subscriptions.size());
+        assertThat(subscribedSellersResponseDto.isHasNext()).isFalse();
     }
 
     @ParameterizedTest
@@ -250,19 +266,24 @@ public class SellerSubscribeTest {
     @CsvSource(value = {"2, 3", "1, 5", "0, 1"})
     void getSubscribedSellerHandlesWithQueryStringTest(int page, int size) {
         ///given
-        String subscriberUuid = "oignbgia7hui";
         SubscribedSellersRequestDto subscribedSellersRequestDto = SubscribedSellersRequestDto.builder()
             .subscriberUuid(subscriberUuid)
             .page(page)
             .size(size)
             .build();
 
+        Page<SellerSubscription> sellerSubscriptionPage = getSellerSubscriptionsPage(subscriberUuid,
+            page, size);
+
         Mockito.when(sellerSubscriptionRepository.findBySubscriberUuidAndState(
             subscribedSellersRequestDto.getSubscriberUuid(),
             SubscribeState.SUBSCRIBE,
             PageRequest.of(subscribedSellersRequestDto.getPage(),
                 subscribedSellersRequestDto.getSize())
-        )).thenReturn(getSellerSubscriptionsPageWithPageRequest(subscriberUuid, page, size));
+        )).thenReturn(sellerSubscriptionPage);
+
+        Mockito.when(memberRepository.findByUuidIn(getSellerUuids(sellerSubscriptionPage)))
+            .thenReturn(getMockMembers(sellerSubscriptionPage));
 
         //when
         SubscribedSellersResponseDto subscribedSellersResponseDto = sellerSubscriptionService.getSubscribedSellerHandles(
@@ -271,24 +292,7 @@ public class SellerSubscribeTest {
         //then
         assertThat(subscribedSellersResponseDto.getSellerHandles().size()).isEqualTo(size);
         assertThat(subscribedSellersResponseDto.getCurrentPage()).isEqualTo(page);
-        assertThat(subscribedSellersResponseDto.getHasNext()).isFalse();
-    }
-
-    private static @NotNull Page<SellerSubscription> getSellerSubscriptionsPageWithPageRequest(
-        String subscriberUuid, int page, int size) {
-        List<SellerSubscription> subscriptions = new ArrayList<>();
-        for (int i = 1; i <= size; i++) {
-            subscriptions.add(SellerSubscription.builder()
-                .id(Long.valueOf(i))
-                .subscriberUuid(subscriberUuid)
-                .sellerHandle(String.format("seller-%d", i))
-                .state(SubscribeState.SUBSCRIBE)
-                .build());
-        }
-
-        return new PageImpl<>(subscriptions,
-            PageRequest.of(page, size),
-            subscriptions.size());
+        assertThat(subscribedSellersResponseDto.isHasNext()).isFalse();
     }
 
     @ParameterizedTest
@@ -296,18 +300,22 @@ public class SellerSubscribeTest {
     @CsvSource(value = {"0, 5", "10, 3", "1, 10"})
     void getSubscribedSellerHandlesNoneSubscribeTest(int page, int size) {
         //when
-        String subscriberUuid = "weopfdlkv9igno";
         SubscribedSellersRequestDto subscribedSellersRequestDto = SubscribedSellersRequestDto.builder()
             .subscriberUuid(subscriberUuid)
             .page(page)
             .size(size)
             .build();
 
+        Page<SellerSubscription> sellerSubscriptionPage = Page.empty();
+
         Mockito.when(sellerSubscriptionRepository.findBySubscriberUuidAndState(
             subscribedSellersRequestDto.getSubscriberUuid(),
             SubscribeState.SUBSCRIBE,
             PageRequest.of(page, size)
-        )).thenReturn(Page.empty());
+        )).thenReturn(sellerSubscriptionPage);
+
+        Mockito.when(memberRepository.findByUuidIn(getSellerUuids(sellerSubscriptionPage)))
+            .thenReturn(getMockMembers(sellerSubscriptionPage));
 
         //when
         SubscribedSellersResponseDto subscribedSellersResponseDto = sellerSubscriptionService.getSubscribedSellerHandles(
@@ -317,6 +325,41 @@ public class SellerSubscribeTest {
         assertThat(subscribedSellersResponseDto.getSellerHandles().size()).isEqualTo(0);
         assertThat(subscribedSellersResponseDto.getCurrentPage()).isEqualTo(
             PageState.DEFAULT.getPage());
-        assertThat(subscribedSellersResponseDto.getHasNext()).isFalse();
+        assertThat(subscribedSellersResponseDto.isHasNext()).isFalse();
+    }
+
+    private static @NotNull Page<SellerSubscription> getSellerSubscriptionsPage(
+        String subscriberUuid, int page, int size) {
+        List<SellerSubscription> subscriptions = new ArrayList<>();
+        for (int i = 1; i <= size; i++) {
+            subscriptions.add(SellerSubscription.builder()
+                .id(Long.valueOf(i))
+                .subscriberUuid(subscriberUuid)
+                .sellerUuid(GenerateRandom.sellerUuid())
+                .state(SubscribeState.SUBSCRIBE)
+                .build());
+        }
+
+        return new PageImpl<>(subscriptions,
+            PageRequest.of(page, size),
+            subscriptions.size());
+    }
+
+    private static List<String> getSellerUuids(Page<SellerSubscription> sellerSubscriptionPage) {
+        return sellerSubscriptionPage.get().map(SellerSubscription::getSellerUuid).toList();
+    }
+
+    private static List<Member> getMockMembers(Page<SellerSubscription> sellerSubscriptionPage) {
+        return sellerSubscriptionPage.get().map(sellerSubscription ->
+            Member.builder()
+                .email("test@example.com")
+                .name("testUser")
+                .phoneNum("01012345678")
+                .uuid(sellerSubscription.getSellerUuid())
+                .handle(GenerateRandom.sellerHandle())
+                .terminationStatus(false)
+                .build()
+        ).toList();
+
     }
 }

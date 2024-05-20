@@ -94,6 +94,8 @@ public enum ResponseStatus {
      */
     NO_TINY_CATEGORY(400, "존재하지 않는 카테고리입니다"),
 
+    NO_MATCHED_MEMBERS(400, "회원 목록이 일치하지 않습니다."),
+
     //subscribe
     DUPLICATE_SUBSCRIBE(400, "이미 구독 중입니다."),
     UNSUBSCRIBED_SELLER(400, "구독하지 않은 판매자입니다."),
