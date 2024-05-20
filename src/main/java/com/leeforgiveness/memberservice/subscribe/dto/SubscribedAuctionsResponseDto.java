@@ -14,13 +14,13 @@ import lombok.Setter;
 public class SubscribedAuctionsResponseDto {
     private List<String> auctionUuids;
     private int currentPage;
-    private Boolean hasNext;
+    private boolean hasNext;
 
     public static SubscribedAuctionsResponseVo dtoToVo(SubscribedAuctionsResponseDto subscribedAuctionsResponseDto) {
         return new SubscribedAuctionsResponseVo(
             subscribedAuctionsResponseDto.getAuctionUuids(),
             subscribedAuctionsResponseDto.getCurrentPage(),
-            subscribedAuctionsResponseDto.getHasNext()
+            subscribedAuctionsResponseDto.isHasNext()
         );
     }
 }
