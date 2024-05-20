@@ -69,6 +69,16 @@ public class MemberServiceImpl implements MemberService {
 		}
 	}
 
+	public String createHandle() {
+		String character = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+		StringBuilder handle = new StringBuilder("@user-");
+		Random random = new Random();
+		for (int i = 0; i < 9; i++) {
+			handle.append(character.charAt(random.nextInt(character.length())));
+		}
+		return handle.toString();
+	}
+
 	//SNS 회원 추가
 	@Override
 	@Transactional
@@ -81,12 +91,10 @@ public class MemberServiceImpl implements MemberService {
 		duplicationEmail(snsMemberAddRequestDto.getEmail());
 
 		String uuid = UUID.randomUUID().toString();
+		String handle = createHandle();
 
-		String character = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		StringBuilder handle = new StringBuilder("@user-");
-		Random random = new Random();
-		for (int i = 0; i < 9; i++) {
-			handle.append(character.charAt(random.nextInt(character.length())));
+		if (memberRepository.findByHandle(handle).isPresent()) {
+			handle = createHandle();
 		}
 
 		Member member = Member.builder()
@@ -94,7 +102,7 @@ public class MemberServiceImpl implements MemberService {
 			.name(snsMemberAddRequestDto.getName())
 			.phoneNum(snsMemberAddRequestDto.getPhoneNum())
 			.uuid(uuid)
-			.handle(handle.toString())
+			.handle(handle)
 			.build();
 
 		memberRepository.save(member);
@@ -137,8 +145,9 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	@Transactional
 	public TokenResponseDto snsLogin(MemberSnsLoginRequestDto memberSnsLoginRequestDto) {
-        SnsInfo snsInfo = snsInfoRepository.findBySnsIdAndSnsType(memberSnsLoginRequestDto.getSnsId(), memberSnsLoginRequestDto.getSnsType())
-                .orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
+		SnsInfo snsInfo = snsInfoRepository.findBySnsIdAndSnsType(
+				memberSnsLoginRequestDto.getSnsId(), memberSnsLoginRequestDto.getSnsType())
+			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 		Member member = memberRepository.findByEmail(memberSnsLoginRequestDto.getEmail())
 			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 		if (member.isTerminationStatus()) {
@@ -210,6 +219,10 @@ public class MemberServiceImpl implements MemberService {
 		Member member = memberRepository.findByUuid(memberUuid)
 			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 
+		if (memberRepository.findByHandle(memberUpdateRequestDto.getHandle()).isPresent()) {
+			throw new CustomException(ResponseStatus.DUPLICATE_HANDLE);
+		}
+
 		memberRepository.save(Member.builder()
 			.id(member.getId())
 			.uuid(member.getUuid())
@@ -274,7 +287,8 @@ public class MemberServiceImpl implements MemberService {
 
 		List<Map<String, Object>> qualificationList = new ArrayList<>();
 
-		for (Qualification qualificationInfo : qualificationRepository.findByUuid(member.getUuid())) {
+		for (Qualification qualificationInfo : qualificationRepository.findByUuid(
+			member.getUuid())) {
 			Map<String, Object> qulificationInfoMap = new HashMap<>();
 			qulificationInfoMap.put("name", qualificationInfo.getName());
 			qulificationInfoMap.put("issueDate", qualificationInfo.getIssueDate());
