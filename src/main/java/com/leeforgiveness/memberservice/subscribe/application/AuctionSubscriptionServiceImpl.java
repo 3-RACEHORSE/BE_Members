@@ -33,13 +33,16 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
             auctionSubscribeRequestDto);
 
         if (auctionSubscriptionOptional.isEmpty()) {
+            //구독한 적이 없던 경매글 구독
             subscribeAuction(AuctionSubscription.builder()
                 .subscriberUuid(auctionSubscribeRequestDto.getSubscriberUuid())
                 .auctionUuid(auctionSubscribeRequestDto.getAuctionUuid())
                 .build());
         } else if (auctionSubscriptionOptional.get().getState() == SubscribeState.SUBSCRIBE) {
+            //이미 구독중인 경매글이면 예외 발생
             throw new CustomException(ResponseStatus.DUPLICATE_SUBSCRIBE);
         } else if (auctionSubscriptionOptional.get().getState() == SubscribeState.UNSUBSCRIBE) {
+            //구독 취소했던 경매글을 다시 구독
             subscribeCanceledAuction(auctionSubscriptionOptional.get());
         }
     }
@@ -51,11 +54,21 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
             .auctionUuid(auctionSubscription.getAuctionUuid())
             .state(SubscribeState.SUBSCRIBE)
             .build();
-        this.auctionSubscriptionRepository.save(updateAuctionSubscription);
+        try {
+            this.auctionSubscriptionRepository.save(updateAuctionSubscription);
+        } catch (Exception e) {
+            log.error("Error while updating auction_subscription subscribe state:", e);
+            throw new CustomException(ResponseStatus.DATABASE_UPDATE_FAIL);
+        }
     }
 
     private void subscribeAuction(AuctionSubscription auctionSubscription) {
-        this.auctionSubscriptionRepository.save(auctionSubscription);
+        try {
+            this.auctionSubscriptionRepository.save(auctionSubscription);
+        } catch (Exception e) {
+            log.error("Error while inserting auction_subscription subscribe state:", e);
+            throw new CustomException(ResponseStatus.DATABASE_INSERT_FAIL);
+        }
     }
 
 
@@ -67,26 +80,39 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
 
         if (auctionSubscriptionOptional.isEmpty()
             || auctionSubscriptionOptional.get().getState() == SubscribeState.UNSUBSCRIBE) {
+            // 구독한 적이 없거나 구독취소했던 경매글이면 예외 발생
             throw new CustomException(ResponseStatus.UNSUBSCRIBED_AUCTION);
         } else if (auctionSubscriptionOptional.get().getState() == SubscribeState.SUBSCRIBE) {
+            // 구독 중인 경매글이면 구독 취소
             AuctionSubscription auctionSubscription = auctionSubscriptionOptional.get();
-            this.auctionSubscriptionRepository.save(
-                AuctionSubscription.builder()
-                    .id(auctionSubscription.getId())
-                    .subscriberUuid(auctionSubscription.getSubscriberUuid())
-                    .auctionUuid(auctionSubscription.getAuctionUuid())
-                    .state(SubscribeState.UNSUBSCRIBE)
-                    .build()
-            );
+
+            try {
+                this.auctionSubscriptionRepository.save(
+                    AuctionSubscription.builder()
+                        .id(auctionSubscription.getId())
+                        .subscriberUuid(auctionSubscription.getSubscriberUuid())
+                        .auctionUuid(auctionSubscription.getAuctionUuid())
+                        .state(SubscribeState.UNSUBSCRIBE)
+                        .build()
+                );
+            } catch (Exception e) {
+                log.error("Error while updating auction_subscription unsubscribe state:", e);
+                throw new CustomException(ResponseStatus.DATABASE_UPDATE_FAIL);
+            }
         }
     }
 
     private Optional<AuctionSubscription> getAuctionSubscription(
         AuctionSubscribeRequestDto auctionSubscribeRequestDto) {
-        return this.auctionSubscriptionRepository.findBySubscriberUuidAndAuctionUuid(
-            auctionSubscribeRequestDto.getSubscriberUuid(),
-            auctionSubscribeRequestDto.getAuctionUuid()
-        );
+        try {
+            return this.auctionSubscriptionRepository.findBySubscriberUuidAndAuctionUuid(
+                auctionSubscribeRequestDto.getSubscriberUuid(),
+                auctionSubscribeRequestDto.getAuctionUuid()
+            );
+        } catch (Exception e) {
+            log.error("Error while reading auction_subscription:", e);
+            throw new CustomException(ResponseStatus.DATABASE_READ_FAIL);
+        }
     }
 
 
@@ -105,11 +131,18 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
             size = PageState.DEFAULT.getSize();
         }
 
-        Page<AuctionSubscription> auctionSubscriptionPage = this.auctionSubscriptionRepository.findBySubscriberUuidAndState(
-            subscribedAuctionsRequestDto.getSubscriberUuid(),
-            SubscribeState.SUBSCRIBE,
-            PageRequest.of(page, size)
-        );
+        Page<AuctionSubscription> auctionSubscriptionPage = Page.empty();
+
+        try {
+             auctionSubscriptionPage = this.auctionSubscriptionRepository.findBySubscriberUuidAndState(
+                subscribedAuctionsRequestDto.getSubscriberUuid(),
+                SubscribeState.SUBSCRIBE,
+                PageRequest.of(page, size)
+            );
+        } catch (Exception e) {
+            log.error("Error while paging auction_subscription:", e);
+            throw new CustomException(ResponseStatus.DATABASE_READ_FAIL);
+        }
 
         List<String> auctionUuids = new ArrayList<>();
         if (auctionSubscriptionPage.isEmpty()) {
