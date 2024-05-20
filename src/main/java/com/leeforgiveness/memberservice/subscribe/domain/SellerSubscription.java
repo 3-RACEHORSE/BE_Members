@@ -30,19 +30,19 @@ public class SellerSubscription extends BaseTimeEntity {
     private Long id;
     @Column(name = "subscriber_uuid", nullable = false)
     private String subscriberUuid;
-    @Column(name = "seller_handle", nullable = false)
-    private String sellerHandle;
+    @Column(name = "seller_uuid", nullable = false)
+    private String sellerUuid;
     @Column(name = "state", nullable = false)
     @ColumnDefault(value = "'SUBSCRIBE'")
     @Enumerated(EnumType.STRING)
     private SubscribeState state;
 
     @Builder
-    public SellerSubscription(Long id, String subscriberUuid, String sellerHandle,
+    public SellerSubscription(Long id, String subscriberUuid, String sellerUuid,
         SubscribeState state) {
         this.id = id;
         this.subscriberUuid = subscriberUuid;
-        this.sellerHandle = sellerHandle;
+        this.sellerUuid = sellerUuid;
         this.state = state;
     }
 }
