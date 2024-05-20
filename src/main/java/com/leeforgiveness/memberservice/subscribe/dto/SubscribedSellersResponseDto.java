@@ -17,14 +17,14 @@ public class SubscribedSellersResponseDto {
 
     private List<String> sellerHandles;
     private Integer currentPage;
-    private Boolean hasNext;
+    private boolean hasNext;
 
     public static SubscribedSellersResponseVo dtoToVo(
         SubscribedSellersResponseDto subscribedSellersResponseDto) {
         return new SubscribedSellersResponseVo(
             subscribedSellersResponseDto.getSellerHandles(),
             subscribedSellersResponseDto.getCurrentPage(),
-            subscribedSellersResponseDto.getHasNext()
+            subscribedSellersResponseDto.isHasNext()
         );
     }
 }
