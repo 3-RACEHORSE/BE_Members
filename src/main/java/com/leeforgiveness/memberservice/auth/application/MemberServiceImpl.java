@@ -62,14 +62,14 @@ public class MemberServiceImpl implements MemberService {
 	private final UserReportRepository userReportRepository;
 
 	//이메일 중복 확인
-	private void duplicationEmail(String email) {
+	private void checkEmailDuplicate(String email) {
 		if (memberRepository.findByEmail(email).isPresent()) {
 			throw new CustomException(ResponseStatus.DUPLICATE_EMAIL);
 		}
 	}
 
 	//휴대폰 번호 중복 확인
-	private void duplicationPhoneNumber(String phoneNum) {
+	private void checkPhoneNumberDuplicate(String phoneNum) {
 		if (memberRepository.findByPhoneNum(phoneNum).isPresent()) {
 			throw new CustomException(ResponseStatus.DUPLICATE_PHONE_NUMBER);
 		}
@@ -96,10 +96,10 @@ public class MemberServiceImpl implements MemberService {
 		}
 
 		//이메일 중복 확인
-		duplicationEmail(snsMemberAddRequestDto.getEmail());
+		checkEmailDuplicate(snsMemberAddRequestDto.getEmail());
 
 		//휴대폰 번호 중복 확인
-		duplicationPhoneNumber(snsMemberAddRequestDto.getPhoneNum());
+		checkPhoneNumberDuplicate(snsMemberAddRequestDto.getPhoneNum());
 
 		String uuid = UUID.randomUUID().toString();
 		String handle = createHandle();
@@ -236,7 +236,7 @@ public class MemberServiceImpl implements MemberService {
 		}
 
 		//휴대폰번호 중복 확인
-		duplicationPhoneNumber(memberUpdateRequestDto.getPhoneNum());
+		checkPhoneNumberDuplicate(memberUpdateRequestDto.getPhoneNum());
 
 		String handle = "@" + memberUpdateRequestDto.getHandle();
 
