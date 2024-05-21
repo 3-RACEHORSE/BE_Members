@@ -18,12 +18,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-#      - name: Set Yaml
-#        uses: microsoft/variable-substitution@v1
-#        with:
-#          files: ./src/main/resources/application.yml
-#        env:
-#          encrypt.key: ${{ secrets.ENCRYPT_KEY }}
+      - name: Install yq
+        run: sudo snap install yq
+
+      - name: Modify YAML File
+        run: |
+          yq -i '.spring.profiles.active = "prod"' ./src/main/resources/application.yml
+          yq -i '.encrypt.key = ${{ secrets.ENCRYPT_KEY }}' ./src/main/resources/application.yml
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -40,9 +41,6 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build
-        env:
-          PROFILE: 'prod'
-          ENCRYPT_KEY: ${{ secrets.ENCRYPT_KEY }}
 
       - name: Build docker image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/member-service:latest -f Dockerfile .
