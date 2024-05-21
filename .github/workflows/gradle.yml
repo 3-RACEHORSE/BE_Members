@@ -40,7 +40,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Build with Gradle
-        run: ENCRYPT_KEY=${{ secrets.ENCRYPT_KEY }} PROFILE=prod ./gradlew build
+        run: ./gradlew build
 
       - name: Build docker image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/member-service:latest -f Dockerfile .
