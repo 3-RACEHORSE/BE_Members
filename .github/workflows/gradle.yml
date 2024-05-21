@@ -21,9 +21,10 @@ jobs:
       - name: Update application.yml with secrets
         uses: mikefarah/yq@master
         with:
-          cmd: | 
-            yq -i '.encrypt.key = "${{ secrets.ENCRYPT_KEY }}"' application.yml
-            yq -i '.spring.profiles.active = "prod"' application.yml
+          cmd: yq -i '
+            .encrypt.key = "${{ secrets.ENCRYPT_KEY }}" |
+            .spring.profiles.active = "prod"
+            ' src/main/resources/application.yml
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
