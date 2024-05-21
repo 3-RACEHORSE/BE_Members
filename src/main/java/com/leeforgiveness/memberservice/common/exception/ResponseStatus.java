@@ -63,6 +63,8 @@ public enum ResponseStatus {
     DUPLICATE_SNS_MEMBERS(400, "이미 사용중인 SNS 회원입니다."),
     NO_EXIST_SNS_MEMBERS(400, "가입되지 않은 SNS 멤버 정보입니다."),
 
+    DUPLICATE_HANDLE(400, "이미 사용중인 핸들입니다."),
+
     /**
      * 경력
      */
@@ -90,8 +92,17 @@ public enum ResponseStatus {
     /**
      * Category Service Error 
      */
-    NO_TINY_CATEGORY(400, "존재하지 않는 카테고리입니다");
+    NO_TINY_CATEGORY(400, "존재하지 않는 카테고리입니다"),
 
+    NO_MATCHED_MEMBERS(400, "회원 목록이 일치하지 않습니다."),
+
+    //subscribe
+    DUPLICATE_SUBSCRIBE(400, "이미 구독 중입니다."),
+    UNSUBSCRIBED_SELLER(400, "구독하지 않은 판매자입니다."),
+    UNSUBSCRIBED_AUCTION(400, "구독하지 않은 경매글입니다."),
+    DATABASE_READ_FAIL(500, "데이터베이스 데이터 조회에 실패했습니다."),
+    DATABASE_UPDATE_FAIL(500, "데이터베이스 데이터 수정에 실패했습니다."),
+    DATABASE_INSERT_FAIL(500, "데이터베이스 데이터 삽입에 실패했습니다.");
 
     private final int code;
     private final String message;

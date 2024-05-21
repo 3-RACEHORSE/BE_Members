@@ -35,6 +35,9 @@ public class JwtTokenProvider {
 	@Value("${JWT.SECRET_KEY}")
 	private String secretKey;
 
+	@Value("${JWT.EXPIRATION_TIME}")
+	private long ACCESS_TOKEN_EXPIRATION_TIME;
+
 	public String getUuid(String token) {
 		return extractClaim(token, Claims::getSubject);
 	}
@@ -68,6 +71,8 @@ public class JwtTokenProvider {
 			.setClaims(extractClaims) //정보저장
 			.setSubject(userDetails.getUsername())
 			.setIssuedAt(new Date(System.currentTimeMillis())) //토근 발행 시간
+			.setExpiration(
+				new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME)) //토큰 만료 시간
 			.signWith(getSigningKey(), SignatureAlgorithm.HS256)
 			.compact();
 	}
