@@ -238,13 +238,15 @@ public class MemberServiceImpl implements MemberService {
 		//휴대폰번호 중복 확인
 		duplicationPhoneNumber(memberUpdateRequestDto.getPhoneNum());
 
+		String handle = "@" + memberUpdateRequestDto.getHandle();
+
 		memberRepository.save(Member.builder()
 			.id(member.getId())
 			.uuid(member.getUuid())
 			.email(member.getEmail())
 			.name(memberUpdateRequestDto.getName())
 			.phoneNum(memberUpdateRequestDto.getPhoneNum())
-			.handle(memberUpdateRequestDto.getHandle())
+			.handle(handle)
 			.profileImage(memberUpdateRequestDto.getProfileImage())
 			.terminationStatus(member.isTerminationStatus())
 			.build()
