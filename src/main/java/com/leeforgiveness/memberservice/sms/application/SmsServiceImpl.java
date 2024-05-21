@@ -55,8 +55,9 @@ public class SmsServiceImpl implements SmsService {
 		String randomCode = createRandomNumber();
 		String receiverPhoneNum = smsSendDto.getPhoneNum();
 
-		memberRepository.findByPhoneNum(receiverPhoneNum)
-			.orElseThrow(() -> new CustomException(ResponseStatus.DUPLICATE_PHONE_NUMBER));
+		if(memberRepository.findByPhoneNum(receiverPhoneNum).isPresent()){
+			throw new CustomException(ResponseStatus.DUPLICATE_PHONE_NUMBER);
+		}
 
 		Message message = new Message();
 		message.setFrom(fromNumber);
