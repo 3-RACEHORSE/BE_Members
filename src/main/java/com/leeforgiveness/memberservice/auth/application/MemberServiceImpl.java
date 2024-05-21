@@ -62,21 +62,21 @@ public class MemberServiceImpl implements MemberService {
 	private final UserReportRepository userReportRepository;
 
 	//이메일 중복 확인
-	public void duplicationEmail(String email) {
+	private void duplicationEmail(String email) {
 		if (memberRepository.findByEmail(email).isPresent()) {
 			throw new CustomException(ResponseStatus.DUPLICATE_EMAIL);
 		}
 	}
 
 	//휴대폰 번호 중복 확인
-	public void duplicationPhoneNumber(String phoneNum) {
+	private void duplicationPhoneNumber(String phoneNum) {
 		if (memberRepository.findByPhoneNum(phoneNum).isPresent()) {
 			throw new CustomException(ResponseStatus.DUPLICATE_PHONE_NUMBER);
 		}
 	}
 	
 	//핸들 생성
-	public String createHandle() {
+	private String createHandle() {
 		String character = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		StringBuilder handle = new StringBuilder("@user-");
 		Random random = new Random();
