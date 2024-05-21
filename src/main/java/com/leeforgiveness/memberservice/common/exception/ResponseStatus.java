@@ -59,6 +59,8 @@ public enum ResponseStatus {
     PASSWORD_CONTAIN_NUM_FAILED(400, "휴대폰 번호를 포함한 비밀번호 입니다."),
     PASSWORD_CONTAIN_EMAIL_FAILED(400, "이메일이 포함된 비밀번호 입니다."),
     NO_EXIST_AUTH(400, "인증 정보가 없습니다"),
+    DUPLICATE_PHONE_NUMBER(400, "이미 가입한 회원의 전화번호입니다."),
+    FAILED_TO_VERIFY_SMS_CODE(400, "인증번호가 일치하지 않습니다."),
 
     DUPLICATE_SNS_MEMBERS(400, "이미 사용중인 SNS 회원입니다."),
     NO_EXIST_SNS_MEMBERS(400, "가입되지 않은 SNS 멤버 정보입니다."),

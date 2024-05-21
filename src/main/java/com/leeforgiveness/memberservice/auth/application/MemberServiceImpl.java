@@ -62,14 +62,21 @@ public class MemberServiceImpl implements MemberService {
 	private final UserReportRepository userReportRepository;
 
 	//이메일 중복 확인
-	@Override
-	public void duplicationEmail(String email) {
+	private void checkEmailDuplicate(String email) {
 		if (memberRepository.findByEmail(email).isPresent()) {
 			throw new CustomException(ResponseStatus.DUPLICATE_EMAIL);
 		}
 	}
 
-	public String createHandle() {
+	//휴대폰 번호 중복 확인
+	private void checkPhoneNumberDuplicate(String phoneNum) {
+		if (memberRepository.findByPhoneNum(phoneNum).isPresent()) {
+			throw new CustomException(ResponseStatus.DUPLICATE_PHONE_NUMBER);
+		}
+	}
+	
+	//핸들 생성
+	private String createHandle() {
 		String character = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		StringBuilder handle = new StringBuilder("@user-");
 		Random random = new Random();
@@ -88,7 +95,11 @@ public class MemberServiceImpl implements MemberService {
 			throw new CustomException(ResponseStatus.DUPLICATED_MEMBERS);
 		}
 
-		duplicationEmail(snsMemberAddRequestDto.getEmail());
+		//이메일 중복 확인
+		checkEmailDuplicate(snsMemberAddRequestDto.getEmail());
+
+		//휴대폰 번호 중복 확인
+		checkPhoneNumberDuplicate(snsMemberAddRequestDto.getPhoneNum());
 
 		String uuid = UUID.randomUUID().toString();
 		String handle = createHandle();
@@ -219,9 +230,15 @@ public class MemberServiceImpl implements MemberService {
 		Member member = memberRepository.findByUuid(memberUuid)
 			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 
+		//핸들 중복 확인
 		if (memberRepository.findByHandle(memberUpdateRequestDto.getHandle()).isPresent()) {
 			throw new CustomException(ResponseStatus.DUPLICATE_HANDLE);
 		}
+
+		//휴대폰번호 중복 확인
+		checkPhoneNumberDuplicate(memberUpdateRequestDto.getPhoneNum());
+
+		String handle = "@" + memberUpdateRequestDto.getHandle();
 
 		memberRepository.save(Member.builder()
 			.id(member.getId())
@@ -229,7 +246,7 @@ public class MemberServiceImpl implements MemberService {
 			.email(member.getEmail())
 			.name(memberUpdateRequestDto.getName())
 			.phoneNum(memberUpdateRequestDto.getPhoneNum())
-			.handle(memberUpdateRequestDto.getHandle())
+			.handle(handle)
 			.profileImage(memberUpdateRequestDto.getProfileImage())
 			.terminationStatus(member.isTerminationStatus())
 			.build()
