@@ -17,6 +17,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     List<Member> findByUuidIn(List<String> uuids);
 
+    Optional<Member> findByPhoneNum(String phoneNum);
+
     default Member findByUuidOrThrow(String uuid) {
         return findByUuid(uuid).orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
     }

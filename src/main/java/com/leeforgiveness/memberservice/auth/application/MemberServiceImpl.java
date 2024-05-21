@@ -62,13 +62,20 @@ public class MemberServiceImpl implements MemberService {
 	private final UserReportRepository userReportRepository;
 
 	//이메일 중복 확인
-	@Override
 	public void duplicationEmail(String email) {
 		if (memberRepository.findByEmail(email).isPresent()) {
 			throw new CustomException(ResponseStatus.DUPLICATE_EMAIL);
 		}
 	}
 
+	//휴대폰 번호 중복 확인
+	public void duplicationPhoneNumber(String phoneNum) {
+		if (memberRepository.findByPhoneNum(phoneNum).isPresent()) {
+			throw new CustomException(ResponseStatus.DUPLICATE_PHONE_NUMBER);
+		}
+	}
+	
+	//핸들 생성
 	public String createHandle() {
 		String character = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		StringBuilder handle = new StringBuilder("@user-");
@@ -88,7 +95,11 @@ public class MemberServiceImpl implements MemberService {
 			throw new CustomException(ResponseStatus.DUPLICATED_MEMBERS);
 		}
 
+		//이메일 중복 확인
 		duplicationEmail(snsMemberAddRequestDto.getEmail());
+
+		//휴대폰 번호 중복 확인
+		duplicationPhoneNumber(snsMemberAddRequestDto.getPhoneNum());
 
 		String uuid = UUID.randomUUID().toString();
 		String handle = createHandle();
@@ -219,9 +230,13 @@ public class MemberServiceImpl implements MemberService {
 		Member member = memberRepository.findByUuid(memberUuid)
 			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 
+		//핸들 중복 확인
 		if (memberRepository.findByHandle(memberUpdateRequestDto.getHandle()).isPresent()) {
 			throw new CustomException(ResponseStatus.DUPLICATE_HANDLE);
 		}
+
+		//휴대폰번호 중복 확인
+		duplicationPhoneNumber(memberUpdateRequestDto.getPhoneNum());
 
 		memberRepository.save(Member.builder()
 			.id(member.getId())
