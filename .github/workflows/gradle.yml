@@ -18,12 +18,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set Yaml
-        uses: microsoft/variable-substitution@v1
+      - name: Update application.yml with secrets
+        uses: mikefarah/yq@master
         with:
-          files: ./src/main/resources/application.yml
-        env:
-          encrypt.key: ${{secrets.ENCRYPT_KEY}}
+          cmd: yq -i '
+            .encrypt.key = "${{ secrets.ENCRYPT_KEY }}" |
+            .spring.profiles.active = "prod"
+            ' src/main/resources/application.yml
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -39,7 +40,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew clean build
 
       - name: Build docker image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/member-service:latest -f Dockerfile .
