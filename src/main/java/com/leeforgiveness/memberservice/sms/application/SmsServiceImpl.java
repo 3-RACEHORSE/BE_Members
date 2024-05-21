@@ -1,5 +1,8 @@
 package com.leeforgiveness.memberservice.sms.application;
 
+import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
+import com.leeforgiveness.memberservice.common.exception.CustomException;
+import com.leeforgiveness.memberservice.common.exception.ResponseStatus;
 import com.leeforgiveness.memberservice.sms.dto.SmsSendDto;
 import com.leeforgiveness.memberservice.sms.dto.SmsVerificationDto;
 import com.leeforgiveness.memberservice.sms.infrastucture.SmsCertification;
@@ -21,24 +24,21 @@ public class SmsServiceImpl implements SmsService {
 	private final SmsCertification smsCertification;
 	private final DefaultMessageService messageService;
 	private final String fromNumber;
+	private final MemberRepository memberRepository;
 
-//    @Value("${coolsms.apiKey}")
-//    private String apiKey;
-//    @Value("${coolsms.apiSecret}")
-//    private String apiSecret;
-//    @Value("${coolsms.fromNumber}")
-//    private String fromNumber;
 
 	public SmsServiceImpl(@Value("${coolsms.apiKey}") String apiKey,
 		@Value("${coolsms.apiSecret}") String apiSecret,
-		@Value("${coolsms.fromNumber}") String fromNumber,
+		@Value("${coolsms.fromNumber}") String fromNumber, MemberRepository memberRepository,
 		SmsCertification smsCertification) {
 		this.fromNumber = fromNumber;
 		this.smsCertification = smsCertification;
 		this.messageService = NurigoApp.INSTANCE.initialize(apiKey, apiSecret,
 			"http://api.coolsms.co.kr");
+		this.memberRepository = memberRepository;
 	}
 
+	//인증번호생성
 	private String createRandomNumber() {
 		Random rand = new Random();
 		String randomNum = "";
@@ -49,10 +49,14 @@ public class SmsServiceImpl implements SmsService {
 		return randomNum;
 	}
 
+	//인증번호전송
 	@Override
 	public SingleMessageSentResponse sendOne(SmsSendDto smsSendDto) {
 		String randomCode = createRandomNumber();
 		String receiverPhoneNum = smsSendDto.getPhoneNum();
+
+		memberRepository.findByPhoneNum(receiverPhoneNum)
+			.orElseThrow(() -> new CustomException(ResponseStatus.DUPLICATE_PHONE_NUMBER));
 
 		Message message = new Message();
 		message.setFrom(fromNumber);
@@ -66,14 +70,16 @@ public class SmsServiceImpl implements SmsService {
 		return response;
 	}
 
+	//인증번호 확인
 	@Override
 	public void verifySmsCode(SmsVerificationDto smsVerificaitionDto) {
 		if (!isVerify(smsVerificaitionDto)) {
-			throw new IllegalArgumentException("인증번호가 일치하지 않습니다.");
+			throw new CustomException(ResponseStatus.FAILED_TO_VERIFY_SMS_CODE);
 		}
 		smsCertification.deleteSmsCode(smsVerificaitionDto.getPhoneNum());
 	}
 
+	//인증번호 검증
 	private boolean isVerify(SmsVerificationDto request) {
 		log.info("code: {}", smsCertification.getSmsCode(request.getPhoneNum()));
 		log.info("request: {}", request.getVerificationCode());
