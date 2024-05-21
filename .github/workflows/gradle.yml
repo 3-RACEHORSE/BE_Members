@@ -18,12 +18,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set Yaml
-        uses: microsoft/variable-substitution@v1
+      - name: Update application.yml with secrets
+        uses: mikefarah/yq@master
         with:
-          files: ./src/main/resources/application.yml
-        env:
-          encrypt.key: ${{ secrets.ENCRYPT_KEY }}
+          cmd: | 
+            yq -i '.encrypt.key = "${{ secrets.ENCRYPT_KEY }}"' application.yml
+            yq -i '.spring.profiles.active = "prod"' application.yml
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
