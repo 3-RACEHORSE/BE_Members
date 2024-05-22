@@ -8,9 +8,11 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import java.util.Arrays;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@RequiredArgsConstructor
 @OpenAPIDefinition(
     info = @Info(
         title = "Member Service API",
@@ -20,8 +22,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SwaggerConfig {
-
-    private static final String BEARER_TOKEN_PREFIX = "Bearer";
 
     @Bean
     public OpenAPI openAPI() {
@@ -33,6 +33,6 @@ public class SwaggerConfig {
         return new OpenAPI()
             .components(new Components().addSecuritySchemes("bearerAuth", securityScheme))
             .security(Arrays.asList(securityRequirement))
-            .addServersItem(new Server().url("/"));
+            .addServersItem(new Server().url("/member-service"));
     }
 }
