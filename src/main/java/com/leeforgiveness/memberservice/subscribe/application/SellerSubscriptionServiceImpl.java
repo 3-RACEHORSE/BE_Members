@@ -166,21 +166,15 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
             throw new CustomException(ResponseStatus.DATABASE_READ_FAIL);
         }
 
-        List<String> sellerHandles = new ArrayList<>();
-
         if (sellerSubscriptionPage.isEmpty()) {
-            return SubscribedSellersResponseDto.builder()
-                .sellerHandles(sellerHandles)
-                .currentPage(PageState.DEFAULT.getPage())
-                .hasNext(sellerSubscriptionPage.hasNext())
-                .build();
+            throw new CustomException(ResponseStatus.NO_DATA);
         }
 
         // 판매자 uuid 리스트를 핸들 리스트로 변환
         List<String> sellerUuids = sellerSubscriptionPage.get()
             .map(SellerSubscription::getSellerUuid).toList();
 
-        sellerHandles = getSellers(sellerUuids).stream().map(Member::getHandle).toList();
+        List<String> sellerHandles = getSellers(sellerUuids).stream().map(Member::getHandle).toList();
 
         return SubscribedSellersResponseDto.builder()
             .sellerHandles(sellerHandles)
