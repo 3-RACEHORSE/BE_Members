@@ -104,7 +104,9 @@ public enum ResponseStatus {
     UNSUBSCRIBED_AUCTION(400, "구독하지 않은 경매글입니다."),
     DATABASE_READ_FAIL(500, "데이터베이스 데이터 조회에 실패했습니다."),
     DATABASE_UPDATE_FAIL(500, "데이터베이스 데이터 수정에 실패했습니다."),
-    DATABASE_INSERT_FAIL(500, "데이터베이스 데이터 삽입에 실패했습니다.");
+    DATABASE_INSERT_FAIL(500, "데이터베이스 데이터 삽입에 실패했습니다."),
+
+    NO_DATA(404, "데이터가 없습니다.");
 
     private final int code;
     private final String message;
