@@ -144,16 +144,11 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
             throw new CustomException(ResponseStatus.DATABASE_READ_FAIL);
         }
 
-        List<String> auctionUuids = new ArrayList<>();
         if (auctionSubscriptionPage.isEmpty()) {
-            return SubscribedAuctionsResponseDto.builder()
-                .auctionUuids(auctionUuids)
-                .currentPage(PageState.DEFAULT.getPage())
-                .hasNext(auctionSubscriptionPage.hasNext())
-                .build();
+            throw new CustomException(ResponseStatus.NO_DATA);
         }
 
-        auctionUuids = auctionSubscriptionPage.get()
+        List<String> auctionUuids = auctionSubscriptionPage.get()
             .map(AuctionSubscription::getAuctionUuid).toList();
 
         return SubscribedAuctionsResponseDto.builder()
