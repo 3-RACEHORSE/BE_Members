@@ -1,6 +1,7 @@
 package com.leeforgiveness.memberservice.auth.dto;
 
 import com.leeforgiveness.memberservice.auth.vo.SnsMemberAddRequestVo;
+import java.util.List;
 import lombok.*;
 
 import java.util.Map;
@@ -17,7 +18,7 @@ public class SnsMemberAddRequestDto {
     private String email;
     private String name;
     private String phoneNum;
-    private Map<Long, String> interestCategories;
+    private List<Map<Long, String>> interestCategories;
 
     public static SnsMemberAddRequestDto voToDto(SnsMemberAddRequestVo snsMemberAddRequestVo) {
         return SnsMemberAddRequestDto.builder()
