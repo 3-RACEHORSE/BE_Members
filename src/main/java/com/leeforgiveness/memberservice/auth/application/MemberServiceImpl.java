@@ -94,6 +94,8 @@ public class MemberServiceImpl implements MemberService {
 			.name(snsMemberAddRequestDto.getName())
 			.phoneNum(snsMemberAddRequestDto.getPhoneNum())
 			.uuid(uuid)
+			.profileImage(
+				"https://w7.pngwing.com/pngs/993/650/png-transparent-user-profile-computer-icons-others-miscellaneous-black-profile-avatar-thumbnail.png")
 			.handle(handle.toString())
 			.build();
 
@@ -137,8 +139,9 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	@Transactional
 	public TokenResponseDto snsLogin(MemberSnsLoginRequestDto memberSnsLoginRequestDto) {
-        SnsInfo snsInfo = snsInfoRepository.findBySnsIdAndSnsType(memberSnsLoginRequestDto.getSnsId(), memberSnsLoginRequestDto.getSnsType())
-                .orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
+		SnsInfo snsInfo = snsInfoRepository.findBySnsIdAndSnsType(
+				memberSnsLoginRequestDto.getSnsId(), memberSnsLoginRequestDto.getSnsType())
+			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 		Member member = memberRepository.findByEmail(memberSnsLoginRequestDto.getEmail())
 			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 		if (member.isTerminationStatus()) {
@@ -274,7 +277,8 @@ public class MemberServiceImpl implements MemberService {
 
 		List<Map<String, Object>> qualificationList = new ArrayList<>();
 
-		for (Qualification qualificationInfo : qualificationRepository.findByUuid(member.getUuid())) {
+		for (Qualification qualificationInfo : qualificationRepository.findByUuid(
+			member.getUuid())) {
 			Map<String, Object> qulificationInfoMap = new HashMap<>();
 			qulificationInfoMap.put("name", qualificationInfo.getName());
 			qulificationInfoMap.put("issueDate", qualificationInfo.getIssueDate());
