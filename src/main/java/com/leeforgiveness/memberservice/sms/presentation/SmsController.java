@@ -22,7 +22,7 @@ public class SmsController {
 
     private final SmsService smsService;
 
-    @PostMapping("/cerify")
+    @PostMapping("/certify")
     @Operation(summary = "인증메세지 발송", description = "인증메세지 발송")
     public SingleMessageSentResponse sendOne(@RequestBody SmsSendDto smsSendDto) {
         log.info("메세지 발송");

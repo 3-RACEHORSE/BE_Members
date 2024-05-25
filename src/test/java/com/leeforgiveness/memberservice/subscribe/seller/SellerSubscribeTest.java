@@ -296,7 +296,7 @@ public class SellerSubscribeTest {
     }
 
     @ParameterizedTest
-    @DisplayName("사용자가 아무도 구독하지 않았다면 어떤 값을 요청해도 빈 페이지가 조회된다.")
+    @DisplayName("사용자가 아무도 구독하지 않았다면 예외를 발생시킨다.")
     @CsvSource(value = {"0, 5", "10, 3", "1, 10"})
     void getSubscribedSellerHandlesNoneSubscribeTest(int page, int size) {
         //when
@@ -317,15 +317,9 @@ public class SellerSubscribeTest {
         Mockito.when(memberRepository.findByUuidIn(getSellerUuids(sellerSubscriptionPage)))
             .thenReturn(getMockMembers(sellerSubscriptionPage));
 
-        //when
-        SubscribedSellersResponseDto subscribedSellersResponseDto = sellerSubscriptionService.getSubscribedSellerHandles(
-            subscribedSellersRequestDto);
-
-        //then
-        assertThat(subscribedSellersResponseDto.getSellerHandles().size()).isEqualTo(0);
-        assertThat(subscribedSellersResponseDto.getCurrentPage()).isEqualTo(
-            PageState.DEFAULT.getPage());
-        assertThat(subscribedSellersResponseDto.isHasNext()).isFalse();
+        //when & then
+        assertThrows(CustomException.class, () -> sellerSubscriptionService.getSubscribedSellerHandles(
+            subscribedSellersRequestDto));
     }
 
     private static @NotNull Page<SellerSubscription> getSellerSubscriptionsPage(
