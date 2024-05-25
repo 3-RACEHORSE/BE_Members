@@ -17,7 +17,7 @@ public enum ResponseStatus {
      * 토큰 에러
      */
     WRONG_JWT_TOKEN(400, "다시 로그인 해주세요"),
-    USER_NOT_FOUND(404, "존재하지 않는 유저입니다"),
+    USER_NOT_FOUND(201, "존재하지 않는 유저입니다"),
     /**
      * 400: 이미지 요청 오류
      */
