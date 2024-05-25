@@ -94,7 +94,7 @@ public enum ResponseStatus {
     /**
      * Category Service Error 
      */
-    NO_TINY_CATEGORY(404, "존재하지 않는 카테고리입니다");
+    NO_TINY_CATEGORY(404, "존재하지 않는 카테고리입니다"),
 
     NO_MATCHED_MEMBERS(400, "회원 목록이 일치하지 않습니다."),
 
