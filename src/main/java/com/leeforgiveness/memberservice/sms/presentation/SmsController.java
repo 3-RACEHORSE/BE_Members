@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "SMS인증", description = "SMS 인증관리 API")
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/non-authorization/users")
 public class SmsController {
 
     private final SmsService smsService;

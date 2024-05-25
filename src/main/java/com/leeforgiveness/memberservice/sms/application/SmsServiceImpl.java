@@ -1,5 +1,8 @@
 package com.leeforgiveness.memberservice.sms.application;
 
+import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
+import com.leeforgiveness.memberservice.common.exception.CustomException;
+import com.leeforgiveness.memberservice.common.exception.ResponseStatus;
 import com.leeforgiveness.memberservice.sms.dto.SmsSendDto;
 import com.leeforgiveness.memberservice.sms.dto.SmsVerificationDto;
 import com.leeforgiveness.memberservice.sms.infrastucture.SmsCertification;
@@ -18,67 +21,71 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class SmsServiceImpl implements SmsService {
 
-    private final SmsCertification smsCertification;
-    private final DefaultMessageService messageService;
-    private final String fromNumber;
+	private final SmsCertification smsCertification;
+	private final DefaultMessageService messageService;
+	private final String fromNumber;
+	private final MemberRepository memberRepository;
 
-//    @Value("${coolsms.apiKey}")
-//    private String apiKey;
-//    @Value("${coolsms.apiSecret}")
-//    private String apiSecret;
-//    @Value("${coolsms.fromNumber}")
-//    private String fromNumber;
 
-    public SmsServiceImpl(@Value("${coolsms.apiKey}") String apiKey,
-        @Value("${coolsms.apiSecret}") String apiSecret,
-        @Value("${coolsms.fromNumber}") String fromNumber,
-        SmsCertification smsCertification) {
-        this.fromNumber = fromNumber;
-        this.smsCertification = smsCertification;
-        this.messageService = NurigoApp.INSTANCE.initialize("NCSQ17RQ1AQ5ENFL", "SHMJK29EAPDAR7TB2UWNGYJCFJNJE7ED",
-            "http://api.coolsms.co.kr");
-    }
+	public SmsServiceImpl(@Value("${coolsms.apiKey}") String apiKey,
+		@Value("${coolsms.apiSecret}") String apiSecret,
+		@Value("${coolsms.fromNumber}") String fromNumber, MemberRepository memberRepository,
+		SmsCertification smsCertification) {
+		this.fromNumber = fromNumber;
+		this.smsCertification = smsCertification;
+		this.messageService = NurigoApp.INSTANCE.initialize(apiKey, apiSecret,
+			"http://api.coolsms.co.kr");
+		this.memberRepository = memberRepository;
+	}
 
-    private String createRandomNumber() {
-        Random rand = new Random();
-        String randomNum = "";
-        for (int i = 0; i < 7; i++) {
-            String random = Integer.toString(rand.nextInt(10));
-            randomNum += random;
-        }
-        return randomNum;
-    }
+	//인증번호생성
+	private String createRandomNumber() {
+		Random rand = new Random();
+		String randomNum = "";
+		for (int i = 0; i < 7; i++) {
+			String random = Integer.toString(rand.nextInt(10));
+			randomNum += random;
+		}
+		return randomNum;
+	}
 
-    @Override
-    public SingleMessageSentResponse sendOne(SmsSendDto smsSendDto) {
-        String randomCode = createRandomNumber();
-        String receiverPhoneNum = smsSendDto.getPhoneNum();
+	//인증번호전송
+	@Override
+	public SingleMessageSentResponse sendOne(SmsSendDto smsSendDto) {
+		String randomCode = createRandomNumber();
+		String receiverPhoneNum = smsSendDto.getPhoneNum();
 
-        Message message = new Message();
-        message.setFrom(fromNumber);
-        message.setTo(receiverPhoneNum);
-        message.setText(String.format("[천마인력] 본인확인 인증번호 [%s]를 입력해주세요.", randomCode));
+		if(memberRepository.findByPhoneNum(receiverPhoneNum).isPresent()){
+			throw new CustomException(ResponseStatus.DUPLICATE_PHONE_NUMBER);
+		}
 
-        smsCertification.createSmsCode(receiverPhoneNum, randomCode);
+		Message message = new Message();
+		message.setFrom(fromNumber);
+		message.setTo(receiverPhoneNum);
+		message.setText(String.format("[천마인력] 본인확인 인증번호 [%s]를 입력해주세요.", randomCode));
 
-        SingleMessageSentResponse response = this.messageService.sendOne(
-            new SingleMessageSendingRequest(message));
-        return response;
-    }
+		smsCertification.createSmsCode(receiverPhoneNum, randomCode);
 
-    @Override
-    public void verifySmsCode(SmsVerificationDto smsVerificaitionDto) {
-        if (!isVerify(smsVerificaitionDto)) {
-            throw new IllegalArgumentException("인증번호가 일치하지 않습니다.");
-        }
-        smsCertification.deleteSmsCode(smsVerificaitionDto.getPhoneNum());
-    }
+		SingleMessageSentResponse response = this.messageService.sendOne(
+			new SingleMessageSendingRequest(message));
+		return response;
+	}
 
-    private boolean isVerify(SmsVerificationDto request) {
-        log.info("code: {}", smsCertification.getSmsCode(request.getPhoneNum()));
-        log.info("request: {}", request.getVerificationCode());
-        return (smsCertification.hasKey(request.getPhoneNum()) &&
-            smsCertification.getSmsCode(request.getPhoneNum())
-                .equals(request.getVerificationCode()));
-    }
+	//인증번호 확인
+	@Override
+	public void verifySmsCode(SmsVerificationDto smsVerificaitionDto) {
+		if (!isVerify(smsVerificaitionDto)) {
+			throw new CustomException(ResponseStatus.FAILED_TO_VERIFY_SMS_CODE);
+		}
+		smsCertification.deleteSmsCode(smsVerificaitionDto.getPhoneNum());
+	}
+
+	//인증번호 검증
+	private boolean isVerify(SmsVerificationDto request) {
+		log.info("code: {}", smsCertification.getSmsCode(request.getPhoneNum()));
+		log.info("request: {}", request.getVerificationCode());
+		return (smsCertification.hasKey(request.getPhoneNum()) &&
+			smsCertification.getSmsCode(request.getPhoneNum())
+				.equals(request.getVerificationCode()));
+	}
 }

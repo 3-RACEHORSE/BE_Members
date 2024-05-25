@@ -12,8 +12,8 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 @EnableDiscoveryClient
 public class MemberserviceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(MemberserviceApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(MemberserviceApplication.class, args);
+    }
 
 }

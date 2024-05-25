@@ -59,9 +59,13 @@ public enum ResponseStatus {
     PASSWORD_CONTAIN_NUM_FAILED(400, "휴대폰 번호를 포함한 비밀번호 입니다."),
     PASSWORD_CONTAIN_EMAIL_FAILED(400, "이메일이 포함된 비밀번호 입니다."),
     NO_EXIST_AUTH(400, "인증 정보가 없습니다"),
+    DUPLICATE_PHONE_NUMBER(400, "이미 가입한 회원의 전화번호입니다."),
+    FAILED_TO_VERIFY_SMS_CODE(400, "인증번호가 일치하지 않습니다."),
 
     DUPLICATE_SNS_MEMBERS(400, "이미 사용중인 SNS 회원입니다."),
     NO_EXIST_SNS_MEMBERS(404, "가입되지 않은 SNS 멤버 정보입니다."),
+
+    DUPLICATE_HANDLE(400, "이미 사용중인 핸들입니다."),
 
     /**
      * 경력
@@ -92,6 +96,17 @@ public enum ResponseStatus {
      */
     NO_TINY_CATEGORY(404, "존재하지 않는 카테고리입니다");
 
+    NO_MATCHED_MEMBERS(400, "회원 목록이 일치하지 않습니다."),
+
+    //subscribe
+    DUPLICATE_SUBSCRIBE(400, "이미 구독 중입니다."),
+    UNSUBSCRIBED_SELLER(400, "구독하지 않은 판매자입니다."),
+    UNSUBSCRIBED_AUCTION(400, "구독하지 않은 경매글입니다."),
+    DATABASE_READ_FAIL(500, "데이터베이스 데이터 조회에 실패했습니다."),
+    DATABASE_UPDATE_FAIL(500, "데이터베이스 데이터 수정에 실패했습니다."),
+    DATABASE_INSERT_FAIL(500, "데이터베이스 데이터 삽입에 실패했습니다."),
+
+    NO_DATA(404, "데이터가 없습니다.");
 
     private final int code;
     private final String message;
