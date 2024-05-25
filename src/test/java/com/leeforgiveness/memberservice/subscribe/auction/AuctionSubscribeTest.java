@@ -246,7 +246,7 @@ public class AuctionSubscribeTest {
     }
 
     @ParameterizedTest
-    @DisplayName("사용자가 구독한 경매글이 없다면 어떤 값을 요청해도 빈 페이지가 조회된다.")
+    @DisplayName("사용자가 구독한 경매글이 없다면 예외를 발생시킨다.")
     @CsvSource(value = {"1, 3", "3, 7", "0, -10", "-1, 0"})
     void getSubscribedAuctionUuidsNoneSubscribeTest(int page, int size) {
         //given
@@ -260,15 +260,10 @@ public class AuctionSubscribeTest {
                 subscribedAuctionsRequestDto.getSize())
         )).thenReturn(Page.empty());
 
-        //when
-        SubscribedAuctionsResponseDto subscribedAuctionsResponseDto =
-            this.auctionSubscriptionService.getSubscribedAuctionUuids(subscribedAuctionsRequestDto);
-
-        //then
-        assertThat(subscribedAuctionsResponseDto.getAuctionUuids().size()).isEqualTo(0);
-        assertThat(subscribedAuctionsResponseDto.getCurrentPage()).isEqualTo(
-            PageState.DEFAULT.getPage());
-        assertThat(subscribedAuctionsResponseDto.isHasNext()).isFalse();
+        //when & then
+        assertThrows(CustomException.class,
+            () -> this.auctionSubscriptionService.getSubscribedAuctionUuids(
+                subscribedAuctionsRequestDto));
     }
 
     private static @NotNull Page<AuctionSubscription> getAuctionSubscrtiptionsPage(
