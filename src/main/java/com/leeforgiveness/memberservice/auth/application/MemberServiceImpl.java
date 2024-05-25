@@ -74,7 +74,7 @@ public class MemberServiceImpl implements MemberService {
 			throw new CustomException(ResponseStatus.DUPLICATE_PHONE_NUMBER);
 		}
 	}
-	
+
 	//핸들 생성
 	private String createHandle() {
 		String character = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -129,21 +129,23 @@ public class MemberServiceImpl implements MemberService {
 		snsInfoRepository.save(snsInfo);
 
 		// interestCategories 맵에서 각 항목을 가져와 InterestCategory 객체를 생성하고 저장
-		Map<Long, String> interestCategories = snsMemberAddRequestDto.getInterestCategories();
+		List<Map<Long, String>> interestCategories = snsMemberAddRequestDto.getInterestCategories();
 		log.info("interestCategories: {}", interestCategories);
-		for (Map.Entry<Long, String> category : interestCategories.entrySet()) {
-			Long categoryId = category.getKey();
-			log.info("categoryId: {}", categoryId);
-			String categoryName = category.getValue();
-			log.info("categoryName: {}", categoryName);
+		for (Map<Long, String> categoryMap : interestCategories) {
+			for (Map.Entry<Long, String> category : categoryMap.entrySet()) {
+				Long categoryId = category.getKey();
+				log.info("categoryId: {}", categoryId);
+				String categoryName = category.getValue();
+				log.info("categoryName: {}", categoryName);
 
-			InterestCategory interestCategory = InterestCategory.builder()
-				.uuid(uuid)
-				.categoryId(categoryId)
-				.categoryName(categoryName)
-				.build();
+				InterestCategory interestCategory = InterestCategory.builder()
+					.uuid(uuid)
+					.categoryId(categoryId)
+					.categoryName(categoryName)
+					.build();
 
-			interestCategoryRepository.save(interestCategory);
+				interestCategoryRepository.save(interestCategory);
+			}
 		}
 	}
 

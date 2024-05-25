@@ -1,5 +1,6 @@
 package com.leeforgiveness.memberservice.auth.vo;
 
+import java.util.List;
 import java.util.Map;
 import lombok.Getter;
 
@@ -11,6 +12,6 @@ public class SnsMemberAddRequestVo {
     private String email;
     private String name;
     private String phoneNum;
-    private Map<Long, String> interestCategories;
+    private List<Map<Long, String>> interestCategories;
 
 }
