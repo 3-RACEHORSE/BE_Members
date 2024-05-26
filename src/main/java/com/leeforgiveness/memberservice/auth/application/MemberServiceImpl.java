@@ -114,7 +114,7 @@ public class MemberServiceImpl implements MemberService {
 			.phoneNum(snsMemberAddRequestDto.getPhoneNum())
 			.uuid(uuid)
 			.profileImage(
-				"https://w7.pngwing.com/pngs/993/650/png-transparent-user-profile-computer-icons-others-miscellaneous-black-profile-avatar-thumbnail.png")
+				"https://ifh.cc/g/Vv1lrR.png")
 			.handle(handle)
 			.build();
 
