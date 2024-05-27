@@ -15,6 +15,7 @@ import com.leeforgiveness.memberservice.auth.dto.MemberReportRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSaveCareerRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSnsLoginRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberUuidResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberLoginRequestDto;
@@ -424,5 +425,15 @@ public class MemberServiceImpl implements MemberService {
 			.build();
 
 		userReportRepository.save(userReport);
+	}
+
+	@Override
+	public MemberUuidResponseDto findMemberUuid(String handle) {
+		Member member = memberRepository.findByHandle(handle)
+			.orElseThrow(() -> new CustomException(ResponseStatus.NO_EXIST_MEMBERS));
+
+		return MemberUuidResponseDto.builder()
+			.uuid(member.getUuid())
+			.build();
 	}
 }
