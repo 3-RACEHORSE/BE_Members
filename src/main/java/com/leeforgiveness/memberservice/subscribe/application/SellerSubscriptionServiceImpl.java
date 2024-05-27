@@ -9,13 +9,17 @@ import com.leeforgiveness.memberservice.subscribe.dto.SellerSubscribeRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.SellerSubscriptionRepository;
+import com.leeforgiveness.memberservice.subscribe.message.AuctionSubscriptionMessage;
+import com.leeforgiveness.memberservice.subscribe.message.SellerSubscriptionMessage;
 import com.leeforgiveness.memberservice.subscribe.state.PageState;
 import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,7 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
 
     private final SellerSubscriptionRepository sellerSubscriptionRepository;
     private final MemberRepository memberRepository;
+    private final StreamBridge streamBridge;
 
     // 판매자의 핸들로 uuid 조회
     private String getSellerUuid(String sellerHandle) {
@@ -65,6 +70,12 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
         } else if (sellerSubscriptionOptional.get().getState() == SubscribeState.UNSUBSCRIBE) {
             subscribeCanceledSeller(sellerSubscriptionOptional.get());
         }
+
+        streamBridge.send("sellerSubscription", SellerSubscriptionMessage.builder()
+            .sellerUuid(sellerUuid)
+            .subscribeState(SubscribeState.SUBSCRIBE)
+            .eventTime(LocalDateTime.now())
+            .build());
     }
 
     //구독 취소했던 판매자를 다시 구독
