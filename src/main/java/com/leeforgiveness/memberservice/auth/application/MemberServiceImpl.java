@@ -220,8 +220,15 @@ public class MemberServiceImpl implements MemberService {
 		Member member = memberRepository.findByUuid(memberUuid)
 			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 
-		if (memberRepository.findByHandle(memberUpdateRequestDto.getHandle()).isPresent()) {
-			throw new CustomException(ResponseStatus.DUPLICATE_HANDLE);
+		String newHandle = memberUpdateRequestDto.getHandle();
+
+		if (!member.getHandle().equals(memberUpdateRequestDto.getHandle())) {
+			if (!newHandle.startsWith("@")) {
+				newHandle = "@" + newHandle;
+			}
+			if (memberRepository.findByHandle(newHandle).isPresent()) {
+				throw new CustomException(ResponseStatus.DUPLICATE_HANDLE);
+			}
 		}
 
 		memberRepository.save(Member.builder()
@@ -230,7 +237,7 @@ public class MemberServiceImpl implements MemberService {
 			.email(member.getEmail())
 			.name(memberUpdateRequestDto.getName())
 			.phoneNum(memberUpdateRequestDto.getPhoneNum())
-			.handle(memberUpdateRequestDto.getHandle())
+			.handle(newHandle)
 			.profileImage(memberUpdateRequestDto.getProfileImage())
 			.terminationStatus(member.isTerminationStatus())
 			.build()
