@@ -15,8 +15,10 @@ import com.leeforgiveness.memberservice.subscribe.dto.SellerSubscribeRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.SellerSubscriptionRepository;
+import com.leeforgiveness.memberservice.subscribe.message.SellerSubscriptionMessage;
 import com.leeforgiveness.memberservice.subscribe.state.PageState;
 import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -36,7 +39,7 @@ public class SellerSubscribeTest {
     private SellerSubscriptionRepository sellerSubscriptionRepository = Mockito.mock(
         SellerSubscriptionRepository.class);
     private MemberRepository memberRepository = Mockito.mock(MemberRepository.class);
-
+    private StreamBridge streamBridge = Mockito.mock(StreamBridge.class);
     private SellerSubscriptionServiceImpl sellerSubscriptionService;
 
     private String subscriberUuid;
@@ -47,7 +50,7 @@ public class SellerSubscribeTest {
     @BeforeEach
     public void setUp() {
         sellerSubscriptionService = new SellerSubscriptionServiceImpl(
-            sellerSubscriptionRepository, memberRepository);
+            sellerSubscriptionRepository, memberRepository, streamBridge);
 
         subscriberUuid = GenerateRandom.subscriberUuid();
         sellerUuid = GenerateRandom.sellerUuid();
@@ -61,6 +64,12 @@ public class SellerSubscribeTest {
             .handle(sellerHandle)
             .terminationStatus(false)
             .build();
+
+        Mockito.when(streamBridge.send("sellerSubscription", SellerSubscriptionMessage.builder()
+            .sellerUuid(sellerUuid)
+            .subscribeState(SubscribeState.SUBSCRIBE)
+            .eventTime(LocalDateTime.now())
+            .build())).thenReturn(true);
     }
 
     @Test
@@ -296,7 +305,7 @@ public class SellerSubscribeTest {
     }
 
     @ParameterizedTest
-    @DisplayName("사용자가 아무도 구독하지 않았다면 어떤 값을 요청해도 빈 페이지가 조회된다.")
+    @DisplayName("사용자가 아무도 구독하지 않았다면 예외를 발생시킨다.")
     @CsvSource(value = {"0, 5", "10, 3", "1, 10"})
     void getSubscribedSellerHandlesNoneSubscribeTest(int page, int size) {
         //when
@@ -317,15 +326,9 @@ public class SellerSubscribeTest {
         Mockito.when(memberRepository.findByUuidIn(getSellerUuids(sellerSubscriptionPage)))
             .thenReturn(getMockMembers(sellerSubscriptionPage));
 
-        //when
-        SubscribedSellersResponseDto subscribedSellersResponseDto = sellerSubscriptionService.getSubscribedSellerHandles(
-            subscribedSellersRequestDto);
-
-        //then
-        assertThat(subscribedSellersResponseDto.getSellerHandles().size()).isEqualTo(0);
-        assertThat(subscribedSellersResponseDto.getCurrentPage()).isEqualTo(
-            PageState.DEFAULT.getPage());
-        assertThat(subscribedSellersResponseDto.isHasNext()).isFalse();
+        //when & then
+        assertThrows(CustomException.class, () -> sellerSubscriptionService.getSubscribedSellerHandles(
+            subscribedSellersRequestDto));
     }
 
     private static @NotNull Page<SellerSubscription> getSellerSubscriptionsPage(

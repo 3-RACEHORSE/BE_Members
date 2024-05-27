@@ -24,8 +24,6 @@ public interface MemberService {
 
     TokenResponseDto snsLogin(MemberSnsLoginRequestDto memberSnsLoginRequestDto);
 
-	void duplicationEmail(String email);
-
 	MemberDetailResponseDto findMember(String uuid);
 
 	SellerMemberDetailResponseDto findSellerMember(String handle);

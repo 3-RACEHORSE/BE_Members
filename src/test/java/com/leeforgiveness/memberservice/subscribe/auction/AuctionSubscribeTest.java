@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 
+import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.common.GenerateRandom;
 import com.leeforgiveness.memberservice.common.exception.CustomException;
 import com.leeforgiveness.memberservice.subscribe.application.AuctionSubscriptionService;
@@ -14,9 +15,12 @@ import com.leeforgiveness.memberservice.subscribe.dto.AuctionSubscribeRequestDto
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.AuctionSubscriptionRepository;
+import com.leeforgiveness.memberservice.subscribe.message.AuctionSubscriptionMessage;
+import com.leeforgiveness.memberservice.subscribe.message.SellerSubscriptionMessage;
 import com.leeforgiveness.memberservice.subscribe.state.PageState;
 import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +39,7 @@ public class AuctionSubscribeTest {
 
     private AuctionSubscriptionRepository auctionSubscriptionRepository = Mockito.mock(
         AuctionSubscriptionRepository.class);
+    private StreamBridge streamBridge = Mockito.mock(StreamBridge.class);
     private AuctionSubscriptionService auctionSubscriptionService;
 
     private String subscriberUuid;
@@ -42,9 +48,15 @@ public class AuctionSubscribeTest {
     @BeforeEach
     public void setUp() {
         auctionSubscriptionService = new AuctionSubscriptionServiceImpl(
-            auctionSubscriptionRepository);
+            auctionSubscriptionRepository, streamBridge);
         subscriberUuid = GenerateRandom.subscriberUuid();
         auctionUuid = GenerateRandom.auctionUuid();
+
+        Mockito.when(streamBridge.send("auctionSubscription", AuctionSubscriptionMessage.builder()
+            .auctionUuid(auctionUuid)
+            .subscribeState(SubscribeState.SUBSCRIBE)
+            .eventTime(LocalDateTime.now())
+            .build())).thenReturn(true);
     }
 
     @Test
@@ -246,7 +258,7 @@ public class AuctionSubscribeTest {
     }
 
     @ParameterizedTest
-    @DisplayName("사용자가 구독한 경매글이 없다면 어떤 값을 요청해도 빈 페이지가 조회된다.")
+    @DisplayName("사용자가 구독한 경매글이 없다면 예외를 발생시킨다.")
     @CsvSource(value = {"1, 3", "3, 7", "0, -10", "-1, 0"})
     void getSubscribedAuctionUuidsNoneSubscribeTest(int page, int size) {
         //given
@@ -260,15 +272,10 @@ public class AuctionSubscribeTest {
                 subscribedAuctionsRequestDto.getSize())
         )).thenReturn(Page.empty());
 
-        //when
-        SubscribedAuctionsResponseDto subscribedAuctionsResponseDto =
-            this.auctionSubscriptionService.getSubscribedAuctionUuids(subscribedAuctionsRequestDto);
-
-        //then
-        assertThat(subscribedAuctionsResponseDto.getAuctionUuids().size()).isEqualTo(0);
-        assertThat(subscribedAuctionsResponseDto.getCurrentPage()).isEqualTo(
-            PageState.DEFAULT.getPage());
-        assertThat(subscribedAuctionsResponseDto.isHasNext()).isFalse();
+        //when & then
+        assertThrows(CustomException.class,
+            () -> this.auctionSubscriptionService.getSubscribedAuctionUuids(
+                subscribedAuctionsRequestDto));
     }
 
     private static @NotNull Page<AuctionSubscription> getAuctionSubscrtiptionsPage(

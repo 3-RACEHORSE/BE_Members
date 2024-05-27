@@ -28,6 +28,7 @@ public class NonAuthorizationMemberController {
 	@Operation(summary = "SNS 회원가입", description = "SNS 회원가입")
 	public SuccessResponse<Object> snsAddMember(
 		@RequestBody SnsMemberAddRequestVo snsMemberAddRequestvo) {
+		log.info(snsMemberAddRequestvo.toString());
 		memberService.snsAddMember(SnsMemberAddRequestDto.voToDto(snsMemberAddRequestvo));
 		return new SuccessResponse<>(null);
 	}
