@@ -249,9 +249,9 @@ public class MemberServiceImpl implements MemberService {
 		}
 
 		//휴대폰번호 중복 확인
-		checkPhoneNumberDuplicate(memberUpdateRequestDto.getPhoneNum());
-
-		String handle = "@" + memberUpdateRequestDto.getHandle();
+		if (!member.getPhoneNum().equals(memberUpdateRequestDto.getPhoneNum())) {
+			checkPhoneNumberDuplicate(memberUpdateRequestDto.getPhoneNum());
+		}
 
 		memberRepository.save(Member.builder()
 			.id(member.getId())
