@@ -2,6 +2,8 @@ package com.leeforgiveness.memberservice.auth.presentation;
 
 import com.leeforgiveness.memberservice.auth.application.MemberService;
 import com.leeforgiveness.memberservice.auth.dto.*;
+import com.leeforgiveness.memberservice.auth.vo.MemberHandleRequestVo;
+import com.leeforgiveness.memberservice.auth.vo.MemberHandleResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberSnsLoginRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberUuidResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailResponseVo;
@@ -59,4 +61,11 @@ public class NonAuthorizationMemberController {
 	public SuccessResponse<MemberUuidResponseVo> memberUuid(@PathVariable String handle) {
 		return new SuccessResponse<>(MemberUuidResponseDto.dtoToVo(memberService.findMemberUuid(handle)));
 	}
+
+	@PostMapping("/handle-data-request")
+	@Operation(summary = "uuid로 사용자 핸들정보 조회(백엔드 통신)", description = "uuid로 사용자 핸들정보 조회(백엔드 통신)")
+	public SuccessResponse<MemberHandleResponseVo> memberHandle(@RequestBody MemberHandleRequestVo memberHandleRequestVo) {
+		return new SuccessResponse<>(MemberHandleResponseDto.dtoToVo(memberService.findMemberHandle(uuid)));
+	}
+
 }
