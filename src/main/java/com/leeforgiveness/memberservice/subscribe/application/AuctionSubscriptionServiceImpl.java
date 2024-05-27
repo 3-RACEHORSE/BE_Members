@@ -7,13 +7,15 @@ import com.leeforgiveness.memberservice.subscribe.dto.AuctionSubscribeRequestDto
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.AuctionSubscriptionRepository;
+import com.leeforgiveness.memberservice.subscribe.message.AuctionSubscriptionMessage;
 import com.leeforgiveness.memberservice.subscribe.state.PageState;
 import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionService {
 
     private final AuctionSubscriptionRepository auctionSubscriptionRepository;
+    private final StreamBridge streamBridge;
 
     @Override
     @Transactional
@@ -45,6 +48,12 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
             //구독 취소했던 경매글을 다시 구독
             subscribeCanceledAuction(auctionSubscriptionOptional.get());
         }
+
+        streamBridge.send("auctionSubscription", AuctionSubscriptionMessage.builder()
+            .auctionUuid(auctionSubscribeRequestDto.getAuctionUuid())
+            .subscribeState(SubscribeState.SUBSCRIBE)
+            .eventTime(LocalDateTime.now())
+            .build());
     }
 
     private void subscribeCanceledAuction(AuctionSubscription auctionSubscription) {
@@ -134,7 +143,7 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
         Page<AuctionSubscription> auctionSubscriptionPage = Page.empty();
 
         try {
-             auctionSubscriptionPage = this.auctionSubscriptionRepository.findBySubscriberUuidAndState(
+            auctionSubscriptionPage = this.auctionSubscriptionRepository.findBySubscriberUuidAndState(
                 subscribedAuctionsRequestDto.getSubscriberUuid(),
                 SubscribeState.SUBSCRIBE,
                 PageRequest.of(page, size)
