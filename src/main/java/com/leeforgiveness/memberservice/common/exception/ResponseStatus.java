@@ -17,11 +17,11 @@ public enum ResponseStatus {
      * 토큰 에러
      */
     WRONG_JWT_TOKEN(400, "다시 로그인 해주세요"),
-    USER_NOT_FOUND(400, "존재하지 않는 유저입니다"),
+    USER_NOT_FOUND(201, "존재하지 않는 유저입니다"),
     /**
      * 400: 이미지 요청 오류
      */
-    NO_EXIST_IMAGE(400, "존재하지 않는 이미지 입니다"),
+    NO_EXIST_IMAGE(404, "존재하지 않는 이미지 입니다"),
     /**
      * 500: 기타 에러
      */
@@ -53,30 +53,32 @@ public enum ResponseStatus {
     FAILED_TO_LOGIN(400, "아이디 또는 패스워드를 다시 확인하세요."),
     FAILED_TO_PASSWORD(400, "비밀번호를 다시 한번 확인 해 주세요."),
     WITHDRAWAL_MEMBERS(400, "탈퇴한 회원입니다."),
-    NO_EXIST_MEMBERS(400, "존재하지 않는 멤버 정보입니다."),
-    MEMBERS_STATUS_IS_NOT_FOUND(400, "존재하지 않는 멤버 상태입니다."),
+    NO_EXIST_MEMBERS(404, "존재하지 않는 멤버 정보입니다."),
+    MEMBERS_STATUS_IS_NOT_FOUND(404, "존재하지 않는 멤버 상태입니다."),
     PASSWORD_SAME_FAILED(400, "현재 사용중인 비밀번호 입니다."),
     PASSWORD_CONTAIN_NUM_FAILED(400, "휴대폰 번호를 포함한 비밀번호 입니다."),
     PASSWORD_CONTAIN_EMAIL_FAILED(400, "이메일이 포함된 비밀번호 입니다."),
     NO_EXIST_AUTH(400, "인증 정보가 없습니다"),
+    DUPLICATE_PHONE_NUMBER(400, "이미 가입한 회원의 전화번호입니다."),
+    FAILED_TO_VERIFY_SMS_CODE(400, "인증번호가 일치하지 않습니다."),
 
     DUPLICATE_SNS_MEMBERS(400, "이미 사용중인 SNS 회원입니다."),
-    NO_EXIST_SNS_MEMBERS(400, "가입되지 않은 SNS 멤버 정보입니다."),
+    NO_EXIST_SNS_MEMBERS(404, "가입되지 않은 SNS 멤버 정보입니다."),
 
     DUPLICATE_HANDLE(400, "이미 사용중인 핸들입니다."),
 
     /**
      * 경력
      */
-    NO_EXIST_CAREER(400, "존재하지 않는 경력입니다"),
-    CAREER_NOT_FOUND(400, "경력을 찾을 수 없습니다."),
+    NO_EXIST_CAREER(404, "존재하지 않는 경력입니다"),
+    CAREER_NOT_FOUND(404, "경력을 찾을 수 없습니다."),
     DUPLICATE_CAREER(400, "이미 등록된 경력입니다"),
 
     /**
      * 자격증
      */
-    NO_EXIST_CERTIFICATE(400, "존재하지 않는 자격증입니다"),
-    CERTIFICATE_NOT_FOUND(400, "자격증을 찾을 수 없습니다."),
+    NO_EXIST_CERTIFICATE(404, "존재하지 않는 자격증입니다"),
+    CERTIFICATE_NOT_FOUND(404, "자격증을 찾을 수 없습니다."),
     DUPLICATE_CERTIFICATE(400, "이미 등록된 자격증입니다"),
 
     /**
@@ -92,7 +94,7 @@ public enum ResponseStatus {
     /**
      * Category Service Error 
      */
-    NO_TINY_CATEGORY(400, "존재하지 않는 카테고리입니다"),
+    NO_TINY_CATEGORY(404, "존재하지 않는 카테고리입니다"),
 
     NO_MATCHED_MEMBERS(400, "회원 목록이 일치하지 않습니다."),
 
@@ -102,7 +104,9 @@ public enum ResponseStatus {
     UNSUBSCRIBED_AUCTION(400, "구독하지 않은 경매글입니다."),
     DATABASE_READ_FAIL(500, "데이터베이스 데이터 조회에 실패했습니다."),
     DATABASE_UPDATE_FAIL(500, "데이터베이스 데이터 수정에 실패했습니다."),
-    DATABASE_INSERT_FAIL(500, "데이터베이스 데이터 삽입에 실패했습니다.");
+    DATABASE_INSERT_FAIL(500, "데이터베이스 데이터 삽입에 실패했습니다."),
+
+    NO_DATA(404, "데이터가 없습니다.");
 
     private final int code;
     private final String message;

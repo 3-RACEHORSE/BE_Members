@@ -10,6 +10,7 @@ import com.leeforgiveness.memberservice.auth.dto.MemberSaveCareerRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSaveRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSnsLoginRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberUuidResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberLoginRequestDto;
@@ -22,8 +23,6 @@ public interface MemberService {
 	void snsAddMember(SnsMemberAddRequestDto snsMemberAddRequestDto);
 
     TokenResponseDto snsLogin(MemberSnsLoginRequestDto memberSnsLoginRequestDto);
-
-	void duplicationEmail(String email);
 
 	MemberDetailResponseDto findMember(String uuid);
 
@@ -46,4 +45,6 @@ public interface MemberService {
 	void addQualification(String uuid, MemberQualificationAddRequestDto memberQualificationAddDto);
 
 	void addReport(String uuid, MemberReportRequestDto memberReportRequestDto);
+
+	MemberUuidResponseDto findMemberUuid(String handle);
 }

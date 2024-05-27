@@ -15,6 +15,7 @@ import com.leeforgiveness.memberservice.auth.dto.MemberReportRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSaveCareerRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSnsLoginRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberUuidResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberLoginRequestDto;
@@ -62,14 +63,21 @@ public class MemberServiceImpl implements MemberService {
 	private final UserReportRepository userReportRepository;
 
 	//이메일 중복 확인
-	@Override
-	public void duplicationEmail(String email) {
+	private void checkEmailDuplicate(String email) {
 		if (memberRepository.findByEmail(email).isPresent()) {
 			throw new CustomException(ResponseStatus.DUPLICATE_EMAIL);
 		}
 	}
 
-	public String createHandle() {
+	//휴대폰 번호 중복 확인
+	private void checkPhoneNumberDuplicate(String phoneNum) {
+		if (memberRepository.findByPhoneNum(phoneNum).isPresent()) {
+			throw new CustomException(ResponseStatus.DUPLICATE_PHONE_NUMBER);
+		}
+	}
+
+	//핸들 생성
+	private String createHandle() {
 		String character = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		StringBuilder handle = new StringBuilder("@user-");
 		Random random = new Random();
@@ -88,7 +96,11 @@ public class MemberServiceImpl implements MemberService {
 			throw new CustomException(ResponseStatus.DUPLICATED_MEMBERS);
 		}
 
-		duplicationEmail(snsMemberAddRequestDto.getEmail());
+		//이메일 중복 확인
+		checkEmailDuplicate(snsMemberAddRequestDto.getEmail());
+
+		//휴대폰 번호 중복 확인
+		checkPhoneNumberDuplicate(snsMemberAddRequestDto.getPhoneNum());
 
 		String uuid = UUID.randomUUID().toString();
 		String handle = createHandle();
@@ -102,6 +114,8 @@ public class MemberServiceImpl implements MemberService {
 			.name(snsMemberAddRequestDto.getName())
 			.phoneNum(snsMemberAddRequestDto.getPhoneNum())
 			.uuid(uuid)
+			.profileImage(
+				"https://ifh.cc/g/Vv1lrR.png")
 			.handle(handle)
 			.build();
 
@@ -116,21 +130,23 @@ public class MemberServiceImpl implements MemberService {
 		snsInfoRepository.save(snsInfo);
 
 		// interestCategories 맵에서 각 항목을 가져와 InterestCategory 객체를 생성하고 저장
-		Map<Long, String> interestCategories = snsMemberAddRequestDto.getInterestCategories();
+		List<Map<Long, String>> interestCategories = snsMemberAddRequestDto.getInterestCategories();
 		log.info("interestCategories: {}", interestCategories);
-		for (Map.Entry<Long, String> category : interestCategories.entrySet()) {
-			Long categoryId = category.getKey();
-			log.info("categoryId: {}", categoryId);
-			String categoryName = category.getValue();
-			log.info("categoryName: {}", categoryName);
+		for (Map<Long, String> categoryMap : interestCategories) {
+			for (Map.Entry<Long, String> category : categoryMap.entrySet()) {
+				Long categoryId = category.getKey();
+				log.info("categoryId: {}", categoryId);
+				String categoryName = category.getValue();
+				log.info("categoryName: {}", categoryName);
 
-			InterestCategory interestCategory = InterestCategory.builder()
-				.uuid(uuid)
-				.categoryId(categoryId)
-				.categoryName(categoryName)
-				.build();
+				InterestCategory interestCategory = InterestCategory.builder()
+					.uuid(uuid)
+					.categoryId(categoryId)
+					.categoryName(categoryName)
+					.build();
 
-			interestCategoryRepository.save(interestCategory);
+				interestCategoryRepository.save(interestCategory);
+			}
 		}
 	}
 
@@ -218,10 +234,24 @@ public class MemberServiceImpl implements MemberService {
 		MemberUpdateRequestDto memberUpdateRequestDto) {
 		Member member = memberRepository.findByUuid(memberUuid)
 			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
+    
+  //핸들 중복 확인
+		String newHandle = memberUpdateRequestDto.getHandle();
 
-		if (memberRepository.findByHandle(memberUpdateRequestDto.getHandle()).isPresent()) {
-			throw new CustomException(ResponseStatus.DUPLICATE_HANDLE);
+		if (!member.getHandle().equals(memberUpdateRequestDto.getHandle())) {
+			if (!newHandle.startsWith("@")) {
+				newHandle = "@" + newHandle;
+			}
+			if (memberRepository.findByHandle(newHandle).isPresent()) {
+				throw new CustomException(ResponseStatus.DUPLICATE_HANDLE);
+			}
+		
 		}
+
+		//휴대폰번호 중복 확인
+		checkPhoneNumberDuplicate(memberUpdateRequestDto.getPhoneNum());
+
+		String handle = "@" + memberUpdateRequestDto.getHandle();
 
 		memberRepository.save(Member.builder()
 			.id(member.getId())
@@ -229,7 +259,7 @@ public class MemberServiceImpl implements MemberService {
 			.email(member.getEmail())
 			.name(memberUpdateRequestDto.getName())
 			.phoneNum(memberUpdateRequestDto.getPhoneNum())
-			.handle(memberUpdateRequestDto.getHandle())
+			.handle(newHandle)
 			.profileImage(memberUpdateRequestDto.getProfileImage())
 			.terminationStatus(member.isTerminationStatus())
 			.build()
@@ -424,5 +454,15 @@ public class MemberServiceImpl implements MemberService {
 			.build();
 
 		userReportRepository.save(userReport);
+	}
+
+	@Override
+	public MemberUuidResponseDto findMemberUuid(String handle) {
+		Member member = memberRepository.findByHandle(handle)
+			.orElseThrow(() -> new CustomException(ResponseStatus.NO_EXIST_MEMBERS));
+
+		return MemberUuidResponseDto.builder()
+			.uuid(member.getUuid())
+			.build();
 	}
 }

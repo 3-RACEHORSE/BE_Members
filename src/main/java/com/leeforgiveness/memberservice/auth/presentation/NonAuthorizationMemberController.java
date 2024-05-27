@@ -2,14 +2,8 @@ package com.leeforgiveness.memberservice.auth.presentation;
 
 import com.leeforgiveness.memberservice.auth.application.MemberService;
 import com.leeforgiveness.memberservice.auth.dto.*;
-import com.leeforgiveness.memberservice.auth.vo.MemberCareerAddRequestVo;
-import com.leeforgiveness.memberservice.auth.vo.MemberCareerDeleteRequestVo;
-import com.leeforgiveness.memberservice.auth.vo.MemberDetailResponseVo;
-import com.leeforgiveness.memberservice.auth.vo.MemberQualificationAddRequestVo;
-import com.leeforgiveness.memberservice.auth.vo.MemberQualificationDeleteRequestVo;
-import com.leeforgiveness.memberservice.auth.vo.MemberReportRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberSnsLoginRequestVo;
-import com.leeforgiveness.memberservice.auth.vo.MemberUpdateRequestVo;
+import com.leeforgiveness.memberservice.auth.vo.MemberUuidResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.SnsMemberAddRequestVo;
 import com.leeforgiveness.memberservice.common.SuccessResponse;
@@ -34,6 +28,7 @@ public class NonAuthorizationMemberController {
 	@Operation(summary = "SNS 회원가입", description = "SNS 회원가입")
 	public SuccessResponse<Object> snsAddMember(
 		@RequestBody SnsMemberAddRequestVo snsMemberAddRequestvo) {
+		log.info(snsMemberAddRequestvo.toString());
 		memberService.snsAddMember(SnsMemberAddRequestDto.voToDto(snsMemberAddRequestvo));
 		return new SuccessResponse<>(null);
 	}
@@ -57,5 +52,11 @@ public class NonAuthorizationMemberController {
 		@PathVariable String handle) {
 		return new SuccessResponse<>(
 			SellerMemberDetailResponseDto.dtoToVo(memberService.findSellerMember(handle)));
+	}
+
+	@GetMapping("/datarequest/{handle}")
+	@Operation(summary = "핸들로 사용자 정보 조회(백엔드 통신)", description = "핸들로 사용자 정보 조회(백엔드 통신)")
+	public SuccessResponse<MemberUuidResponseVo> memberUuid(@PathVariable String handle) {
+		return new SuccessResponse<>(MemberUuidResponseDto.dtoToVo(memberService.findMemberUuid(handle)));
 	}
 }
