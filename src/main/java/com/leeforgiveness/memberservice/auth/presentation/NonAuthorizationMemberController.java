@@ -56,16 +56,16 @@ public class NonAuthorizationMemberController {
 			SellerMemberDetailResponseDto.dtoToVo(memberService.findSellerMember(handle)));
 	}
 
-	@GetMapping("/datarequest/{handle}")
-	@Operation(summary = "핸들로 사용자 정보 조회(백엔드 통신)", description = "핸들로 사용자 정보 조회(백엔드 통신)")
-	public SuccessResponse<MemberUuidResponseVo> memberUuid(@PathVariable String handle) {
-		return new SuccessResponse<>(MemberUuidResponseDto.dtoToVo(memberService.findMemberUuid(handle)));
-	}
+//	@GetMapping("/datarequest/{handle}")
+//	@Operation(summary = "핸들로 사용자 정보 조회(백엔드 통신)", description = "핸들로 사용자 정보 조회(백엔드 통신)")
+//	public SuccessResponse<MemberUuidResponseVo> memberUuid(@PathVariable String handle) {
+//		return new SuccessResponse<>(MemberUuidResponseDto.dtoToVo(memberService.findMemberUuid(handle)));
+//	}
 
-	@PostMapping("/handle-data-request")
+	@GetMapping("/datarequest/{uuid}")
 	@Operation(summary = "uuid로 사용자 핸들정보 조회(백엔드 통신)", description = "uuid로 사용자 핸들정보 조회(백엔드 통신)")
-	public SuccessResponse<MemberHandleResponseVo> memberHandle(@RequestBody MemberHandleRequestVo memberHandleRequestVo) {
-		return new SuccessResponse<>(MemberHandleResponseDto.dtoToVo(memberService.findMemberHandle(uuid)));
+	public SuccessResponse<String> memberHandle(@PathVariable String uuid) {
+		return new SuccessResponse<>(memberService.findMemberHandle(uuid));
 	}
 
 }

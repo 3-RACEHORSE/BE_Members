@@ -47,4 +47,6 @@ public interface MemberService {
 	void addReport(String uuid, MemberReportRequestDto memberReportRequestDto);
 
 	MemberUuidResponseDto findMemberUuid(String handle);
+
+    String findMemberHandle(String uuid);
 }

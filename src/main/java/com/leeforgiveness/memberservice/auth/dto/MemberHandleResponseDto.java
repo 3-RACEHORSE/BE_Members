@@ -6,5 +6,5 @@ public class MemberHandleResponseDto {
 
 	private String handle;
 
-	public static MemberHandleResponseVo dtoToVo
+//	public static MemberHandleResponseVo dtoToVo
 }
