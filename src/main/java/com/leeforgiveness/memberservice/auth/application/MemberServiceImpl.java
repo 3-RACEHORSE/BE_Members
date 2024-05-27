@@ -234,10 +234,18 @@ public class MemberServiceImpl implements MemberService {
 		MemberUpdateRequestDto memberUpdateRequestDto) {
 		Member member = memberRepository.findByUuid(memberUuid)
 			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
+    
+  //핸들 중복 확인
+		String newHandle = memberUpdateRequestDto.getHandle();
 
-		//핸들 중복 확인
-		if (memberRepository.findByHandle(memberUpdateRequestDto.getHandle()).isPresent()) {
-			throw new CustomException(ResponseStatus.DUPLICATE_HANDLE);
+		if (!member.getHandle().equals(memberUpdateRequestDto.getHandle())) {
+			if (!newHandle.startsWith("@")) {
+				newHandle = "@" + newHandle;
+			}
+			if (memberRepository.findByHandle(newHandle).isPresent()) {
+				throw new CustomException(ResponseStatus.DUPLICATE_HANDLE);
+			}
+		
 		}
 
 		//휴대폰번호 중복 확인
@@ -251,7 +259,7 @@ public class MemberServiceImpl implements MemberService {
 			.email(member.getEmail())
 			.name(memberUpdateRequestDto.getName())
 			.phoneNum(memberUpdateRequestDto.getPhoneNum())
-			.handle(handle)
+			.handle(newHandle)
 			.profileImage(memberUpdateRequestDto.getProfileImage())
 			.terminationStatus(member.isTerminationStatus())
 			.build()
