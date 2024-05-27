@@ -2,6 +2,8 @@ package com.leeforgiveness.memberservice.auth.presentation;
 
 import com.leeforgiveness.memberservice.auth.application.MemberService;
 import com.leeforgiveness.memberservice.auth.dto.*;
+import com.leeforgiveness.memberservice.auth.vo.MemberHandleRequestVo;
+import com.leeforgiveness.memberservice.auth.vo.MemberHandleResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberSnsLoginRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberUuidResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailResponseVo;
@@ -54,9 +56,16 @@ public class NonAuthorizationMemberController {
 			SellerMemberDetailResponseDto.dtoToVo(memberService.findSellerMember(handle)));
 	}
 
-	@GetMapping("/datarequest/{handle}")
-	@Operation(summary = "핸들로 사용자 정보 조회(백엔드 통신)", description = "핸들로 사용자 정보 조회(백엔드 통신)")
-	public SuccessResponse<MemberUuidResponseVo> memberUuid(@PathVariable String handle) {
-		return new SuccessResponse<>(MemberUuidResponseDto.dtoToVo(memberService.findMemberUuid(handle)));
+//	@GetMapping("/datarequest/{handle}")
+//	@Operation(summary = "핸들로 사용자 정보 조회(백엔드 통신)", description = "핸들로 사용자 정보 조회(백엔드 통신)")
+//	public SuccessResponse<MemberUuidResponseVo> memberUuid(@PathVariable String handle) {
+//		return new SuccessResponse<>(MemberUuidResponseDto.dtoToVo(memberService.findMemberUuid(handle)));
+//	}
+
+	@GetMapping("/datarequest/{uuid}")
+	@Operation(summary = "uuid로 사용자 핸들정보 조회(백엔드 통신)", description = "uuid로 사용자 핸들정보 조회(백엔드 통신)")
+	public SuccessResponse<String> memberHandle(@PathVariable String uuid) {
+		return new SuccessResponse<>(memberService.findMemberHandle(uuid));
 	}
+
 }

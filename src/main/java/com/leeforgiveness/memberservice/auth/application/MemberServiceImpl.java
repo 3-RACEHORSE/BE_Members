@@ -465,4 +465,12 @@ public class MemberServiceImpl implements MemberService {
 			.uuid(member.getUuid())
 			.build();
 	}
+
+	@Override
+	public String findMemberHandle(String uuid) {
+		Member member = memberRepository.findByUuid(uuid).orElseThrow(
+				() -> new CustomException(ResponseStatus.NO_EXIST_MEMBERS)
+		);
+		return member.getHandle();
+	}
 }
