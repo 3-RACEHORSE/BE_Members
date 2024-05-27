@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 
+import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.common.GenerateRandom;
 import com.leeforgiveness.memberservice.common.exception.CustomException;
 import com.leeforgiveness.memberservice.subscribe.application.AuctionSubscriptionService;
@@ -14,9 +15,12 @@ import com.leeforgiveness.memberservice.subscribe.dto.AuctionSubscribeRequestDto
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.AuctionSubscriptionRepository;
+import com.leeforgiveness.memberservice.subscribe.message.AuctionSubscriptionMessage;
+import com.leeforgiveness.memberservice.subscribe.message.SellerSubscriptionMessage;
 import com.leeforgiveness.memberservice.subscribe.state.PageState;
 import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +39,7 @@ public class AuctionSubscribeTest {
 
     private AuctionSubscriptionRepository auctionSubscriptionRepository = Mockito.mock(
         AuctionSubscriptionRepository.class);
+    private StreamBridge streamBridge = Mockito.mock(StreamBridge.class);
     private AuctionSubscriptionService auctionSubscriptionService;
 
     private String subscriberUuid;
@@ -42,9 +48,15 @@ public class AuctionSubscribeTest {
     @BeforeEach
     public void setUp() {
         auctionSubscriptionService = new AuctionSubscriptionServiceImpl(
-            auctionSubscriptionRepository);
+            auctionSubscriptionRepository, streamBridge);
         subscriberUuid = GenerateRandom.subscriberUuid();
         auctionUuid = GenerateRandom.auctionUuid();
+
+        Mockito.when(streamBridge.send("auctionSubscription", AuctionSubscriptionMessage.builder()
+            .auctionUuid(auctionUuid)
+            .subscribeState(SubscribeState.SUBSCRIBE)
+            .eventTime(LocalDateTime.now())
+            .build())).thenReturn(true);
     }
 
     @Test
