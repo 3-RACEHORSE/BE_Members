@@ -16,7 +16,7 @@
         <!--                <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
       </layout>
     </encoder>
-    <topic>ek-log</topic>
+    <topic>member-service-log</topic>
     <producerConfig>bootstrap.servers=kafka1:29092</producerConfig>
   </appender>
 
