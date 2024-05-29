@@ -100,6 +100,7 @@ public enum ResponseStatus {
 
     //subscribe
     DUPLICATE_SUBSCRIBE(400, "이미 구독 중입니다."),
+    SELF_SUBSCRIBE(300, "자기 자신 또는 자신의 경매글입니다."),
     UNSUBSCRIBED_SELLER(400, "구독하지 않은 판매자입니다."),
     UNSUBSCRIBED_AUCTION(400, "구독하지 않은 경매글입니다."),
     DATABASE_READ_FAIL(500, "데이터베이스 데이터 조회에 실패했습니다."),
