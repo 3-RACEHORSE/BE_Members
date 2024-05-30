@@ -4,7 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum PageState {
-    DEFAULT(0, 5);
+    AUCTION(0, 5),
+    SELLER(0, 10);
 
     private int page;
     private int size;

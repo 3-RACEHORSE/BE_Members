@@ -53,11 +53,11 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
 //
 //        }
 
-        streamBridge.send("auctionSubscription", AuctionSubscriptionMessage.builder()
-            .auctionUuid(auctionSubscribeRequestDto.getAuctionUuid())
-            .subscribeState(SubscribeState.SUBSCRIBE)
-            .eventTime(LocalDateTime.now())
-            .build());
+//        streamBridge.send("auctionSubscription", AuctionSubscriptionMessage.builder()
+//            .auctionUuid(auctionSubscribeRequestDto.getAuctionUuid())
+//            .subscribeState(SubscribeState.SUBSCRIBE)
+//            .eventTime(LocalDateTime.now())
+//            .build());
     }
 
     private void subscribeCanceledAuction(AuctionSubscription auctionSubscription) {
@@ -137,11 +137,11 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
         int size = subscribedAuctionsRequestDto.getSize();
 
         if (page < 0) {
-            page = PageState.DEFAULT.getPage();
+            page = PageState.AUCTION.getPage();
         }
 
         if (size <= 0) {
-            size = PageState.DEFAULT.getSize();
+            size = PageState.AUCTION.getSize();
         }
 
         Page<AuctionSubscription> auctionSubscriptionPage = Page.empty();

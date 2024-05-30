@@ -22,11 +22,11 @@ public class SubscribedSellersRequestDto {
         String uuid, Integer page, Integer size) {
 
         if (page == null || page < 0) {
-            page = PageState.DEFAULT.getPage();
+            page = PageState.SELLER.getPage();
         }
 
         if (size == null || size <= 0) {
-            size = PageState.DEFAULT.getSize();
+            size = PageState.SELLER.getSize();
         }
 
         return SubscribedSellersRequestDto.builder()
