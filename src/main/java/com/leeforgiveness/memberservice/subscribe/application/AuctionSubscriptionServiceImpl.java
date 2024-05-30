@@ -48,6 +48,10 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
             //구독 취소했던 경매글을 다시 구독
             subscribeCanceledAuction(auctionSubscriptionOptional.get());
         }
+        //TODO: 자신의 경매글을 구독하지 못하도록 수정
+//        else if () {
+//
+//        }
 
         streamBridge.send("auctionSubscription", AuctionSubscriptionMessage.builder()
             .auctionUuid(auctionSubscribeRequestDto.getAuctionUuid())
@@ -165,5 +169,17 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
             .currentPage(page)
             .hasNext(auctionSubscriptionPage.hasNext())
             .build();
+    }
+
+    @Override
+    public boolean getIsSubscribed(String memberUuid, String auctionUuid) {
+        Optional<AuctionSubscription> auctionSubscriptionOptional =
+            this.auctionSubscriptionRepository.findBySubscriberUuidAndAuctionUuid(memberUuid,
+                auctionUuid);
+
+        if (auctionSubscriptionOptional.isEmpty()) {
+            throw new CustomException(ResponseStatus.NO_DATA);
+        }
+        return auctionSubscriptionOptional.get().getState() == SubscribeState.SUBSCRIBE;
     }
 }
