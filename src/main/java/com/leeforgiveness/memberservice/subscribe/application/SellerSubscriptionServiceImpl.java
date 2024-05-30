@@ -65,6 +65,8 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
                 .subscriberUuid(subscriberUuid)
                 .sellerUuid(sellerUuid)
                 .build());
+        } else if (subscriberUuid.equals(sellerUuid)) {
+            throw new CustomException(ResponseStatus.SELF_SUBSCRIBE);
         } else if (sellerSubscriptionOptional.get().getState() == SubscribeState.SUBSCRIBE) {
             throw new CustomException(ResponseStatus.DUPLICATE_SUBSCRIBE);
         } else if (sellerSubscriptionOptional.get().getState() == SubscribeState.UNSUBSCRIBE) {
@@ -157,11 +159,11 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
         int size = subscribedSellersRequestDto.getSize();
 
         if (page < 0) {
-            page = PageState.DEFAULT.getPage();
+            page = PageState.SELLER.getPage();
         }
 
         if (size <= 0) {
-            size = PageState.DEFAULT.getSize();
+            size = PageState.SELLER.getSize();
         }
 
         Page<SellerSubscription> sellerSubscriptionPage = Page.empty();
