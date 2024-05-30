@@ -177,7 +177,9 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
             this.auctionSubscriptionRepository.findBySubscriberUuidAndAuctionUuid(memberUuid,
                 auctionUuid);
 
-        return auctionSubscriptionOptional.isPresent()
-            && auctionSubscriptionOptional.get().getState() == SubscribeState.SUBSCRIBE;
+        if (auctionSubscriptionOptional.isEmpty()) {
+            throw new CustomException(ResponseStatus.NO_DATA);
+        }
+        return auctionSubscriptionOptional.get().getState() == SubscribeState.SUBSCRIBE;
     }
 }
