@@ -247,12 +247,12 @@ public class SellerSubscribeTest {
 
         // 기본값만큼 조회한다고 가정
         Page<SellerSubscription> sellerSubscriptionPage = getSellerSubscriptionsPage(subscriberUuid,
-            PageState.DEFAULT.getPage(),
-            PageState.DEFAULT.getSize());
+            PageState.SELLER.getPage(),
+            PageState.SELLER.getSize());
         Mockito.when(sellerSubscriptionRepository.findBySubscriberUuidAndState(
             subscribedSellersRequestDto.getSubscriberUuid(),
             SubscribeState.SUBSCRIBE,
-            PageRequest.of(PageState.DEFAULT.getPage(), PageState.DEFAULT.getSize())
+            PageRequest.of(PageState.SELLER.getPage(), PageState.SELLER.getSize())
         )).thenReturn(sellerSubscriptionPage);
 
         Mockito.when(memberRepository.findByUuidIn(getSellerUuids(sellerSubscriptionPage)))
@@ -264,9 +264,9 @@ public class SellerSubscribeTest {
 
         //then
         assertThat(subscribedSellersResponseDto.getSellerHandles().size()).isEqualTo(
-            PageState.DEFAULT.getSize());
+            PageState.SELLER.getSize());
         assertThat(subscribedSellersResponseDto.getCurrentPage()).isEqualTo(
-            PageState.DEFAULT.getPage());
+            PageState.SELLER.getPage());
         assertThat(subscribedSellersResponseDto.isHasNext()).isFalse();
     }
 
