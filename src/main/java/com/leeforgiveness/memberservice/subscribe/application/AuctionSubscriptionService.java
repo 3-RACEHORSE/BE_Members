@@ -12,4 +12,6 @@ public interface AuctionSubscriptionService {
 
     SubscribedAuctionsResponseDto getSubscribedAuctionUuids(
         SubscribedAuctionsRequestDto subscribedAuctionsRequestDto);
+
+    boolean getIsSubscribed(String memberUuid, String auctionUuid);
 }
