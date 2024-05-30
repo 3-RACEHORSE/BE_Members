@@ -66,6 +66,7 @@ public class AuctionSubscriptionController {
     @GetMapping("/is-subscribed")
     @Operation(summary = "경매글 구독 여부 조회", description = "경매글 구독 여부를 조회합니다.")
     public SuccessResponse<IsSubscribedResponseVo> getIsSubscribed(
+        @RequestHeader String authorization,
         @RequestHeader String uuid,
         @RequestParam(value = "auctionUuid") String auctionUuid
     ) {
