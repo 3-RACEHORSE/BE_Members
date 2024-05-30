@@ -7,10 +7,8 @@ import com.leeforgiveness.memberservice.subscribe.dto.AuctionSubscribeRequestDto
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.AuctionSubscriptionRepository;
-import com.leeforgiveness.memberservice.subscribe.message.AuctionSubscriptionMessage;
 import com.leeforgiveness.memberservice.subscribe.state.PageState;
 import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -53,11 +51,11 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
 //
 //        }
 
-        streamBridge.send("auctionSubscription", AuctionSubscriptionMessage.builder()
-            .auctionUuid(auctionSubscribeRequestDto.getAuctionUuid())
-            .subscribeState(SubscribeState.SUBSCRIBE)
-            .eventTime(LocalDateTime.now())
-            .build());
+//        streamBridge.send("auctionSubscription", AuctionSubscriptionMessage.builder()
+//            .auctionUuid(auctionSubscribeRequestDto.getAuctionUuid())
+//            .subscribeState(SubscribeState.SUBSCRIBE)
+//            .eventTime(LocalDateTime.now())
+//            .build());
     }
 
     private void subscribeCanceledAuction(AuctionSubscription auctionSubscription) {
@@ -137,11 +135,11 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
         int size = subscribedAuctionsRequestDto.getSize();
 
         if (page < 0) {
-            page = PageState.DEFAULT.getPage();
+            page = PageState.AUCTION.getPage();
         }
 
         if (size <= 0) {
-            size = PageState.DEFAULT.getSize();
+            size = PageState.AUCTION.getSize();
         }
 
         Page<AuctionSubscription> auctionSubscriptionPage = Page.empty();
@@ -176,10 +174,7 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
         Optional<AuctionSubscription> auctionSubscriptionOptional =
             this.auctionSubscriptionRepository.findBySubscriberUuidAndAuctionUuid(memberUuid,
                 auctionUuid);
-
-        if (auctionSubscriptionOptional.isEmpty()) {
-            throw new CustomException(ResponseStatus.NO_DATA);
-        }
-        return auctionSubscriptionOptional.get().getState() == SubscribeState.SUBSCRIBE;
+        return auctionSubscriptionOptional.isPresent()
+            && auctionSubscriptionOptional.get().getState() == SubscribeState.SUBSCRIBE;
     }
 }

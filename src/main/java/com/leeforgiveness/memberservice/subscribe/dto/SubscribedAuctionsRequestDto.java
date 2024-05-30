@@ -20,11 +20,11 @@ public class SubscribedAuctionsRequestDto {
         String uuid, Integer page, Integer size
     ) {
         if (page == null || page < 0) {
-            page = PageState.DEFAULT.getPage();
+            page = PageState.AUCTION.getPage();
         }
 
         if (size == null || size <= 0) {
-            size = PageState.DEFAULT.getSize();
+            size = PageState.AUCTION.getSize();
         }
 
         return SubscribedAuctionsRequestDto.builder()
