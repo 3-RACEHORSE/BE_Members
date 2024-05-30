@@ -6,6 +6,7 @@ import com.leeforgiveness.memberservice.subscribe.dto.AuctionSubscribeRequestDto
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsResponseDto;
 import com.leeforgiveness.memberservice.subscribe.vo.AuctionSubscribeRequestVo;
+import com.leeforgiveness.memberservice.subscribe.vo.IsSubscribedResponseVo;
 import com.leeforgiveness.memberservice.subscribe.vo.SubscribedAuctionsResponseVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -60,5 +61,17 @@ public class AuctionSubscriptionController {
             SubscribedAuctionsResponseDto.dtoToVo(
                 this.auctionSubscriptionService.getSubscribedAuctionUuids(
                     SubscribedAuctionsRequestDto.validate(uuid, page, size))));
+    }
+
+    @GetMapping("/is-subscribed")
+    @Operation(summary = "경매글 구독 여부 조회", description = "경매글 구독 여부를 조회합니다.")
+    public SuccessResponse<IsSubscribedResponseVo> getIsSubscribed(
+        @RequestHeader String uuid,
+        @RequestParam(value = "auctionUuid") String auctionUuid
+    ) {
+        return new SuccessResponse<>(
+            new IsSubscribedResponseVo(
+                this.auctionSubscriptionService.getIsSubscribed(uuid, auctionUuid))
+        );
     }
 }
