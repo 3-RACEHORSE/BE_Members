@@ -171,9 +171,16 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
 
     @Override
     public boolean getIsSubscribed(String memberUuid, String auctionUuid) {
-        Optional<AuctionSubscription> auctionSubscriptionOptional =
-            this.auctionSubscriptionRepository.findBySubscriberUuidAndAuctionUuid(memberUuid,
+        Optional<AuctionSubscription> auctionSubscriptionOptional = Optional.empty();
+        try {
+            auctionSubscriptionOptional = this.auctionSubscriptionRepository.findBySubscriberUuidAndAuctionUuid(
+                memberUuid,
                 auctionUuid);
+        } catch (Exception e) {
+            log.error("Error while reading auction_subscription:", e);
+            throw new CustomException(ResponseStatus.DATABASE_READ_FAIL);
+        }
+
         return auctionSubscriptionOptional.isPresent()
             && auctionSubscriptionOptional.get().getState() == SubscribeState.SUBSCRIBE;
     }
