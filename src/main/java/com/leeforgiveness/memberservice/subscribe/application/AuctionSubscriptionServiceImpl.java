@@ -7,10 +7,8 @@ import com.leeforgiveness.memberservice.subscribe.dto.AuctionSubscribeRequestDto
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.AuctionSubscriptionRepository;
-import com.leeforgiveness.memberservice.subscribe.message.AuctionSubscriptionMessage;
 import com.leeforgiveness.memberservice.subscribe.state.PageState;
 import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -176,10 +174,7 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
         Optional<AuctionSubscription> auctionSubscriptionOptional =
             this.auctionSubscriptionRepository.findBySubscriberUuidAndAuctionUuid(memberUuid,
                 auctionUuid);
-
-        if (auctionSubscriptionOptional.isEmpty()) {
-            throw new CustomException(ResponseStatus.NO_DATA);
-        }
-        return auctionSubscriptionOptional.get().getState() == SubscribeState.SUBSCRIBE;
+        return auctionSubscriptionOptional.isPresent()
+            && auctionSubscriptionOptional.get().getState() == SubscribeState.SUBSCRIBE;
     }
 }
