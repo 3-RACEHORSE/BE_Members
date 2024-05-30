@@ -214,8 +214,8 @@ public class AuctionSubscribeTest {
                 subscriberUuid,
                 SubscribeState.SUBSCRIBE,
                 PageRequest.of(
-                    PageState.DEFAULT.getPage(),
-                    PageState.DEFAULT.getSize()))
+                    PageState.AUCTION.getPage(),
+                    PageState.AUCTION.getSize()))
             )
             .thenReturn(getAuctionSubscrtiptionsPage(subscribedAuctionsRequestDto));
 
@@ -225,9 +225,9 @@ public class AuctionSubscribeTest {
 
         //then
         assertThat(subscribedAuctionsResponseDto.getAuctionUuids().size()).isEqualTo(
-            PageState.DEFAULT.getSize());
+            PageState.AUCTION.getSize());
         assertThat(subscribedAuctionsResponseDto.getCurrentPage()).isEqualTo(
-            PageState.DEFAULT.getPage());
+            PageState.AUCTION.getPage());
         assertThat(subscribedAuctionsResponseDto.isHasNext()).isFalse();
     }
 
