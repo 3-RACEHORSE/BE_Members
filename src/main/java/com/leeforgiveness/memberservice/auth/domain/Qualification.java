@@ -21,7 +21,7 @@ public class Qualification {
     private Long id;
     @Column(name = "member_uuid", nullable = false)
     private String uuid;
-    @Column(name = "qualification_name", nullable = false)
+    @Column(name = "qualification_name", nullable = false, length = 30)
     private String name;
     @Column(name = "issue_date", nullable = false)
     private Date issueDate;
