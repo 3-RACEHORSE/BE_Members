@@ -15,15 +15,15 @@ public class Member {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "member_id")
 	private Long id;
-	@Column(name = "email", nullable = false)
+	@Column(name = "email", nullable = false, length = 30)
 	private String email;
-	@Column(name = "name", nullable = false)
+	@Column(name = "name", nullable = false, length = 20)
 	private String name;
-	@Column(name = "phone_num", nullable = false)
+	@Column(name = "phone_num", nullable = false, length = 20)
 	private String phoneNum;
 	@Column(name = "uuid", nullable = false)
 	private String uuid;
-	@Column(name = "handle", nullable = false)
+	@Column(name = "handle", nullable = false, length = 40)
 	private String handle;
 	@Column(name = "termination_status", nullable = false)
 	private boolean terminationStatus;
