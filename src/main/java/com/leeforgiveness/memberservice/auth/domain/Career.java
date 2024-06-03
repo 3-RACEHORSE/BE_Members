@@ -21,7 +21,7 @@ public class Career {
     private Long id;
     @Column(name = "member_uuid", nullable = false)
     private String uuid;
-    @Column(name = "job")
+    @Column(name = "job", length = 50)
     private String job;
     @Column(name = "career_year")
     private int year;

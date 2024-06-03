@@ -19,7 +19,7 @@ public class UserReport {
     private String reporterUuid;
     @Column(name = "reported_uuid", nullable = false)
     private String reportedUuid;
-    @Column(name = "report_reason", nullable = false)
+    @Column(name = "report_reason", nullable = false, length = 100)
     private String reportReason;
     @Column(name = "processing_result", nullable = false)
     private String processingResult;
