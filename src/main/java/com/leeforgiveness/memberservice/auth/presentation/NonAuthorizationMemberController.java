@@ -4,6 +4,7 @@ import com.leeforgiveness.memberservice.auth.application.MemberService;
 import com.leeforgiveness.memberservice.auth.dto.*;
 import com.leeforgiveness.memberservice.auth.vo.MemberHandleRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberHandleResponseVo;
+import com.leeforgiveness.memberservice.auth.vo.MemberInfoResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberSnsLoginRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberUuidResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailResponseVo;
@@ -64,8 +65,8 @@ public class NonAuthorizationMemberController {
 
 	@GetMapping("/datarequest/{uuid}")
 	@Operation(summary = "uuid로 사용자 핸들정보 조회(백엔드 통신)", description = "uuid로 사용자 핸들정보 조회(백엔드 통신)")
-	public SuccessResponse<String> memberHandle(@PathVariable String uuid) {
-		return new SuccessResponse<>(memberService.findMemberHandle(uuid));
+	public SuccessResponse<MemberInfoResponseVo> memberHandle(@PathVariable String uuid) {
+		return new SuccessResponse<>(MemberInfoResponseDto.dtoToVo(memberService.findMemberHandleandProfileImage(uuid)));
 	}
 
 }

@@ -3,6 +3,7 @@ package com.leeforgiveness.memberservice.auth.application;
 import com.leeforgiveness.memberservice.auth.dto.MemberCareerAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberCareerDeleteRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberInfoResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberQualificationAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberQualificationDeleteRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberReportRequestDto;
@@ -48,5 +49,5 @@ public interface MemberService {
 
 	MemberUuidResponseDto findMemberUuid(String handle);
 
-    String findMemberHandle(String uuid);
+	MemberInfoResponseDto findMemberHandleandProfileImage(String uuid);
 }
