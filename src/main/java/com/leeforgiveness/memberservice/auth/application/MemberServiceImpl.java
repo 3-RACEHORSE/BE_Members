@@ -9,6 +9,7 @@ import com.leeforgiveness.memberservice.auth.domain.UserReport;
 import com.leeforgiveness.memberservice.auth.dto.MemberCareerAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberCareerDeleteRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
+import com.leeforgiveness.memberservice.auth.dto.MemberInfoResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberQualificationAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberQualificationDeleteRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberReportRequestDto;
@@ -234,8 +235,8 @@ public class MemberServiceImpl implements MemberService {
 		MemberUpdateRequestDto memberUpdateRequestDto) {
 		Member member = memberRepository.findByUuid(memberUuid)
 			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
-    
-  //핸들 중복 확인
+
+		//핸들 중복 확인
 		String newHandle = memberUpdateRequestDto.getHandle();
 
 		if (!member.getHandle().equals(memberUpdateRequestDto.getHandle())) {
@@ -245,7 +246,7 @@ public class MemberServiceImpl implements MemberService {
 			if (memberRepository.findByHandle(newHandle).isPresent()) {
 				throw new CustomException(ResponseStatus.DUPLICATE_HANDLE);
 			}
-		
+
 		}
 
 		//휴대폰번호 중복 확인
@@ -467,10 +468,13 @@ public class MemberServiceImpl implements MemberService {
 	}
 
 	@Override
-	public String findMemberHandle(String uuid) {
+	public MemberInfoResponseDto findMemberHandleandProfileImage(String uuid) {
 		Member member = memberRepository.findByUuid(uuid).orElseThrow(
-				() -> new CustomException(ResponseStatus.NO_EXIST_MEMBERS)
+			() -> new CustomException(ResponseStatus.NO_EXIST_MEMBERS)
 		);
-		return member.getHandle();
+		return MemberInfoResponseDto.builder()
+			.handle(member.getHandle())
+			.profileImage(member.getProfileImage())
+			.build();
 	}
 }
