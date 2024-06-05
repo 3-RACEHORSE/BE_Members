@@ -2,11 +2,10 @@ package com.leeforgiveness.memberservice.auth.presentation;
 
 import com.leeforgiveness.memberservice.auth.application.MemberService;
 import com.leeforgiveness.memberservice.auth.dto.*;
-import com.leeforgiveness.memberservice.auth.vo.MemberHandleRequestVo;
-import com.leeforgiveness.memberservice.auth.vo.MemberHandleResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberInfoResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberSnsLoginRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberUuidResponseVo;
+import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailResponseVo;
 import com.leeforgiveness.memberservice.auth.vo.SnsMemberAddRequestVo;
 import com.leeforgiveness.memberservice.common.SuccessResponse;
@@ -52,21 +51,29 @@ public class NonAuthorizationMemberController {
 	@GetMapping("/profile/{handle}")
 	@Operation(summary = "판매자 프로필 조회", description = "판매자 프로필 조회")
 	public SuccessResponse<SellerMemberDetailResponseVo> sellerMemberDetail(
+		@RequestHeader(required = false) String uuid,
 		@PathVariable String handle) {
 		return new SuccessResponse<>(
-			SellerMemberDetailResponseDto.dtoToVo(memberService.findSellerMember(handle)));
+			SellerMemberDetailResponseDto.dtoToVo(
+				memberService.findSellerMember(SellerMemberDetailRequestDto.voToDto(
+					(SellerMemberDetailRequestVo.builder()
+						.uuid(uuid)
+						.handle(handle)
+						.build())))));
 	}
 
 	@GetMapping("/datarequest/with-handle")
 	@Operation(summary = "핸들로 사용자 정보 조회(백엔드 통신)", description = "핸들로 사용자 정보 조회(백엔드 통신)")
 	public SuccessResponse<MemberUuidResponseVo> memberUuid(@RequestParam String handle) {
-		return new SuccessResponse<>(MemberUuidResponseDto.dtoToVo(memberService.findMemberUuid(handle)));
+		return new SuccessResponse<>(
+			MemberUuidResponseDto.dtoToVo(memberService.findMemberUuid(handle)));
 	}
 
 	@GetMapping("/datarequest/with-uuid/{uuid}")
 	@Operation(summary = "uuid로 사용자 핸들정보 조회(백엔드 통신)", description = "uuid로 사용자 핸들정보 조회(백엔드 통신)")
 	public SuccessResponse<MemberInfoResponseVo> memberHandle(@PathVariable String uuid) {
-		return new SuccessResponse<>(MemberInfoResponseDto.dtoToVo(memberService.findMemberHandleandProfileImage(uuid)));
+		return new SuccessResponse<>(
+			MemberInfoResponseDto.dtoToVo(memberService.findMemberHandleandProfileImage(uuid)));
 	}
 
 }
