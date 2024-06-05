@@ -22,6 +22,7 @@ public class SellerMemberDetailResponseDto {
     private String profileImage;
     private List<Map<String, Object>> careerInfo;
     private List<Map<String, Object>> qualificationInfo;
+    private boolean isSubscribed;
 
     public static SellerMemberDetailResponseVo dtoToVo(
         SellerMemberDetailResponseDto sellerMemberDetailResponseDto) {
@@ -31,6 +32,7 @@ public class SellerMemberDetailResponseDto {
             sellerMemberDetailResponseDto.getQualificationInfo(),
             sellerMemberDetailResponseDto.getHandle(),
             sellerMemberDetailResponseDto.getWatchList(),
-            sellerMemberDetailResponseDto.getProfileImage());
+            sellerMemberDetailResponseDto.getProfileImage(),
+            sellerMemberDetailResponseDto.isSubscribed());
     }
 }

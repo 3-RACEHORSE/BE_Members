@@ -8,13 +8,12 @@ import com.leeforgiveness.memberservice.auth.dto.MemberQualificationAddRequestDt
 import com.leeforgiveness.memberservice.auth.dto.MemberQualificationDeleteRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberReportRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSaveCareerRequestDto;
-import com.leeforgiveness.memberservice.auth.dto.MemberSaveRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSnsLoginRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUuidResponseDto;
+import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
-import com.leeforgiveness.memberservice.auth.dto.SnsMemberLoginRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.TokenResponseDto;
 
 public interface MemberService {
@@ -27,7 +26,7 @@ public interface MemberService {
 
 	MemberDetailResponseDto findMember(String uuid);
 
-	SellerMemberDetailResponseDto findSellerMember(String handle);
+	SellerMemberDetailResponseDto findSellerMember(SellerMemberDetailRequestDto sellerMemberDetailRequestDto);
 
 	void updateMember(String uuid, MemberUpdateRequestDto memberRequestDto);
 
