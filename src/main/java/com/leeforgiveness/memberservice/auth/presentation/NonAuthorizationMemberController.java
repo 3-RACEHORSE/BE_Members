@@ -57,9 +57,9 @@ public class NonAuthorizationMemberController {
 			SellerMemberDetailResponseDto.dtoToVo(memberService.findSellerMember(handle)));
 	}
 
-	@GetMapping("/datarequest/with-handle/{handle}")
+	@GetMapping("/datarequest/with-handle")
 	@Operation(summary = "핸들로 사용자 정보 조회(백엔드 통신)", description = "핸들로 사용자 정보 조회(백엔드 통신)")
-	public SuccessResponse<MemberUuidResponseVo> memberUuid(@PathVariable String handle) {
+	public SuccessResponse<MemberUuidResponseVo> memberUuid(@RequestParam String handle) {
 		return new SuccessResponse<>(MemberUuidResponseDto.dtoToVo(memberService.findMemberUuid(handle)));
 	}
 
