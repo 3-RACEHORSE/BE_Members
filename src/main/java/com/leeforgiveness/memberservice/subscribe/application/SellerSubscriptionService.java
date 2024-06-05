@@ -10,6 +10,6 @@ public interface SellerSubscriptionService {
 
     void unsubscribeSeller(SellerSubscribeRequestDto sellerSubscribeRequestDto);
 
-    SubscribedSellersResponseDto getSubscribedSellerHandles(
+    SubscribedSellersResponseDto getSubscribedSellerInfos(
         SubscribedSellersRequestDto subscribedSellersRequestDto);
 }
