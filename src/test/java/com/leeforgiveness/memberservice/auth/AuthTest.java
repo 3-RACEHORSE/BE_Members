@@ -16,6 +16,7 @@ import com.leeforgiveness.memberservice.auth.infrastructure.UserReportRepository
 import com.leeforgiveness.memberservice.common.security.JwtTokenProvider;
 import com.leeforgiveness.memberservice.subscribe.domain.SellerSubscription;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.SellerSubscriptionRepository;
+import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -69,6 +70,7 @@ public class AuthTest {
 		SellerSubscription sellerSubscription = SellerSubscription.builder()
 			.subscriberUuid(uuid)
 			.sellerUuid(expectedUuid)
+			.state(SubscribeState.UNSUBSCRIBE)
 			.build();
 
 		Mockito.when(memberRepository.findByHandle(expectedHandle))
