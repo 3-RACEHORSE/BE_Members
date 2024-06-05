@@ -15,6 +15,7 @@ import com.leeforgiveness.memberservice.subscribe.state.PageState;
 import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -190,10 +191,12 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
 
         // 판매자 uuid 리스트로 회원에서 필요한 정보 뽑아내기
         List<Map<String, String>> sellerInfos = getSellers(sellerUuids).stream()
-            .map(member -> Map.of(
-                "handle", member.getHandle(),
-                "profileImage", member.getProfileImage()
-            ))
+            .map(member -> {
+                Map<String, String> info = new HashMap<>();
+                info.put("handle", member.getHandle());
+                info.put("profileImage", member.getProfileImage());
+                return info;
+            })
             .toList();
 
         return SubscribedSellersResponseDto.builder()
