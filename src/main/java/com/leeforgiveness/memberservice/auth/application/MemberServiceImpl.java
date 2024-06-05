@@ -32,6 +32,7 @@ import com.leeforgiveness.memberservice.common.exception.CustomException;
 import com.leeforgiveness.memberservice.common.exception.ResponseStatus;
 import com.leeforgiveness.memberservice.common.security.JwtTokenProvider;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.SellerSubscriptionRepository;
+import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -334,9 +335,17 @@ public class MemberServiceImpl implements MemberService {
 		boolean isSubscribed = false;
 		if (sellerMemberDetailRequestDto.getUuid() != null) {
 			if (sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
+				sellerMemberDetailRequestDto.getUuid(), member.getUuid()).isEmpty()) {
+				isSubscribed = false;
+			} else if (sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
 					sellerMemberDetailRequestDto.getUuid(), member.getUuid())
-				.isPresent()) {
+				.get().getState() == SubscribeState.SUBSCRIBE) {
 				isSubscribed = true;
+			} else if (sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
+					sellerMemberDetailRequestDto.getUuid(), member.getUuid())
+				.get().getState() == SubscribeState.UNSUBSCRIBE) {
+				isSubscribed = false;
+
 			}
 		}
 
