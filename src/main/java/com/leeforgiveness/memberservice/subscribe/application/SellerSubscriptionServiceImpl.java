@@ -16,7 +16,9 @@ import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.stream.function.StreamBridge;
@@ -153,7 +155,7 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
     //구독 조회
     @Override
     @Transactional(readOnly = true)
-    public SubscribedSellersResponseDto getSubscribedSellerHandles(
+    public SubscribedSellersResponseDto getSubscribedSellerInfos(
         SubscribedSellersRequestDto subscribedSellersRequestDto) {
         int page = subscribedSellersRequestDto.getPage();
         int size = subscribedSellersRequestDto.getSize();
@@ -183,14 +185,19 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
             throw new CustomException(ResponseStatus.NO_DATA);
         }
 
-        // 판매자 uuid 리스트를 핸들 리스트로 변환
         List<String> sellerUuids = sellerSubscriptionPage.get()
             .map(SellerSubscription::getSellerUuid).toList();
 
-        List<String> sellerHandles = getSellers(sellerUuids).stream().map(Member::getHandle).toList();
+        // 판매자 uuid 리스트로 회원에서 필요한 정보 뽑아내기
+        List<Map<String, String>> sellerInfos = getSellers(sellerUuids).stream()
+            .map(member -> Map.of(
+                "handle", member.getHandle(),
+                "profileImage", member.getProfileImage()
+            ))
+            .toList();
 
         return SubscribedSellersResponseDto.builder()
-            .sellerHandles(sellerHandles)
+            .sellerInfos(sellerInfos)
             .currentPage(page)
             .hasNext(sellerSubscriptionPage.hasNext())
             .build();

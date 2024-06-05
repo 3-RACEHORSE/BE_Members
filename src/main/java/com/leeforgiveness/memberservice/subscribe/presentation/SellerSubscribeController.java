@@ -54,7 +54,7 @@ public class SellerSubscribeController {
     public SuccessResponse<SubscribedSellersResponseVo> getSellerSubscribe(@RequestHeader String uuid,
         @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size) {
         return new SuccessResponse<>(
-            SubscribedSellersResponseDto.dtoToVo(this.sellerSubscriptionService.getSubscribedSellerHandles(
+            SubscribedSellersResponseDto.dtoToVo(this.sellerSubscriptionService.getSubscribedSellerInfos(
                 SubscribedSellersRequestDto.validate(uuid, page, size))));
     }
 }

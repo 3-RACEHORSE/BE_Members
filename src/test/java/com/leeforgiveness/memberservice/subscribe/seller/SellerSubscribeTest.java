@@ -259,11 +259,11 @@ public class SellerSubscribeTest {
             .thenReturn(getMockMembers(sellerSubscriptionPage));
 
         //when
-        SubscribedSellersResponseDto subscribedSellersResponseDto = sellerSubscriptionService.getSubscribedSellerHandles(
+        SubscribedSellersResponseDto subscribedSellersResponseDto = sellerSubscriptionService.getSubscribedSellerInfos(
             subscribedSellersRequestDto);
 
         //then
-        assertThat(subscribedSellersResponseDto.getSellerHandles().size()).isEqualTo(
+        assertThat(subscribedSellersResponseDto.getSellerInfos().size()).isEqualTo(
             PageState.SELLER.getSize());
         assertThat(subscribedSellersResponseDto.getCurrentPage()).isEqualTo(
             PageState.SELLER.getPage());
@@ -295,11 +295,11 @@ public class SellerSubscribeTest {
             .thenReturn(getMockMembers(sellerSubscriptionPage));
 
         //when
-        SubscribedSellersResponseDto subscribedSellersResponseDto = sellerSubscriptionService.getSubscribedSellerHandles(
+        SubscribedSellersResponseDto subscribedSellersResponseDto = sellerSubscriptionService.getSubscribedSellerInfos(
             subscribedSellersRequestDto);
 
         //then
-        assertThat(subscribedSellersResponseDto.getSellerHandles().size()).isEqualTo(size);
+        assertThat(subscribedSellersResponseDto.getSellerInfos().size()).isEqualTo(size);
         assertThat(subscribedSellersResponseDto.getCurrentPage()).isEqualTo(page);
         assertThat(subscribedSellersResponseDto.isHasNext()).isFalse();
     }
@@ -327,7 +327,7 @@ public class SellerSubscribeTest {
             .thenReturn(getMockMembers(sellerSubscriptionPage));
 
         //when & then
-        assertThrows(CustomException.class, () -> sellerSubscriptionService.getSubscribedSellerHandles(
+        assertThrows(CustomException.class, () -> sellerSubscriptionService.getSubscribedSellerInfos(
             subscribedSellersRequestDto));
     }
 
@@ -361,6 +361,7 @@ public class SellerSubscribeTest {
                 .uuid(sellerSubscription.getSellerUuid())
                 .handle(GenerateRandom.sellerHandle())
                 .terminationStatus(false)
+                .profileImage("http://xxxx")
                 .build()
         ).toList();
 
