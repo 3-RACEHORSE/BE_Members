@@ -17,9 +17,9 @@ import com.leeforgiveness.memberservice.auth.dto.MemberSaveCareerRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSnsLoginRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUuidResponseDto;
+import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
-import com.leeforgiveness.memberservice.auth.dto.SnsMemberLoginRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.TokenResponseDto;
 import com.leeforgiveness.memberservice.auth.infrastructure.CareerRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.InterestCategoryRepository;
@@ -31,6 +31,7 @@ import com.leeforgiveness.memberservice.auth.infrastructure.UserReportRepository
 import com.leeforgiveness.memberservice.common.exception.CustomException;
 import com.leeforgiveness.memberservice.common.exception.ResponseStatus;
 import com.leeforgiveness.memberservice.common.security.JwtTokenProvider;
+import com.leeforgiveness.memberservice.subscribe.infrastructure.SellerSubscriptionRepository;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ public class MemberServiceImpl implements MemberService {
 	private final CareerRepository careerRepository;
 	private final QualificationRepository qualificationRepository;
 	private final UserReportRepository userReportRepository;
+	private final SellerSubscriptionRepository sellerSubscriptionRepository;
 
 	//이메일 중복 확인
 	private void checkEmailDuplicate(String email) {
@@ -289,8 +291,9 @@ public class MemberServiceImpl implements MemberService {
 
 	//판매자 회원정보 조회
 	@Override
-	public SellerMemberDetailResponseDto findSellerMember(String handle) {
-		Member member = memberRepository.findByHandle(handle)
+	public SellerMemberDetailResponseDto findSellerMember(
+		SellerMemberDetailRequestDto sellerMemberDetailRequestDto) {
+		Member member = memberRepository.findByHandle(sellerMemberDetailRequestDto.getHandle())
 			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
 
 		List<Career> career = careerRepository.findByUuid(member.getUuid());
@@ -328,6 +331,15 @@ public class MemberServiceImpl implements MemberService {
 			qualificationList.add(qulificationInfoMap);
 		}
 
+		boolean isSubscribed = false;
+		if (sellerMemberDetailRequestDto.getUuid() != null) {
+			if (sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
+					sellerMemberDetailRequestDto.getUuid(), member.getUuid())
+				.isPresent()) {
+				isSubscribed = true;
+			}
+		}
+
 		return SellerMemberDetailResponseDto.builder()
 			.name(member.getName())
 			.careerInfo(careerInfoList)
@@ -335,6 +347,7 @@ public class MemberServiceImpl implements MemberService {
 			.handle(member.getHandle())
 			.watchList(interestCategories)
 			.profileImage(member.getProfileImage())
+			.isSubscribed(isSubscribed)
 			.build();
 	}
 
