@@ -308,7 +308,7 @@ public class SellerSubscribeTest {
     @DisplayName("사용자가 아무도 구독하지 않았다면 예외를 발생시킨다.")
     @CsvSource(value = {"0, 5", "10, 3", "1, 10"})
     void getSubscribedSellerHandlesNoneSubscribeTest(int page, int size) {
-        //when
+        //given
         SubscribedSellersRequestDto subscribedSellersRequestDto = SubscribedSellersRequestDto.builder()
             .subscriberUuid(subscriberUuid)
             .page(page)
@@ -327,8 +327,48 @@ public class SellerSubscribeTest {
             .thenReturn(getMockMembers(sellerSubscriptionPage));
 
         //when & then
-        assertThrows(CustomException.class, () -> sellerSubscriptionService.getSubscribedSellerInfos(
-            subscribedSellersRequestDto));
+        assertThrows(CustomException.class,
+            () -> sellerSubscriptionService.getSubscribedSellerInfos(
+                subscribedSellersRequestDto));
+    }
+
+    @Test
+    @DisplayName("구독한 판매자의 프로필사진이 없는 경우 null을 반환한다.")
+    void getSubscribedSellerProfileImageNullSubscribeTest() {
+        //given
+        SubscribedSellersRequestDto subscribedSellersRequestDto = SubscribedSellersRequestDto.builder()
+            .subscriberUuid(subscriberUuid)
+            .page(0)
+            .size(1)
+            .build();
+
+        Page<SellerSubscription> sellerSubscriptionPage = getSellerSubscriptionsPage(subscriberUuid,0,1);
+
+        Mockito.when(sellerSubscriptionRepository.findBySubscriberUuidAndState(
+            subscribedSellersRequestDto.getSubscriberUuid(),
+            SubscribeState.SUBSCRIBE,
+            PageRequest.of(subscribedSellersRequestDto.getPage(),
+                subscribedSellersRequestDto.getSize())
+        )).thenReturn(sellerSubscriptionPage);
+
+        Mockito.when(memberRepository.findByUuidIn(getSellerUuids(sellerSubscriptionPage)))
+            .thenReturn(List.of(Member.builder()
+                .email("test@example.com")
+                .name("testUser")
+                .phoneNum("01012345678")
+                .uuid(sellerUuid)
+                .handle(GenerateRandom.sellerHandle())
+                .terminationStatus(false)
+//                .profileImage()
+                .build()));
+
+        //when
+        SubscribedSellersResponseDto subscribedSellersResponseDto = sellerSubscriptionService.getSubscribedSellerInfos(
+            subscribedSellersRequestDto);
+
+        //then
+        assertThat(
+            subscribedSellersResponseDto.getSellerInfos().get(0).get("profileImage")).isNull();
     }
 
     private static @NotNull Page<SellerSubscription> getSellerSubscriptionsPage(
