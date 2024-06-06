@@ -12,15 +12,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class SubscribedAuctionsResponseDto {
-    private List<String> auctionUuids;
-    private int currentPage;
-    private boolean hasNext;
+    private List<AuctionAndIsSubscribedDto> auctionAndIsSubscribedDtos;
 
     public static SubscribedAuctionsResponseVo dtoToVo(SubscribedAuctionsResponseDto subscribedAuctionsResponseDto) {
         return new SubscribedAuctionsResponseVo(
-            subscribedAuctionsResponseDto.getAuctionUuids(),
-            subscribedAuctionsResponseDto.getCurrentPage(),
-            subscribedAuctionsResponseDto.isHasNext()
+            subscribedAuctionsResponseDto.getAuctionAndIsSubscribedDtos()
         );
     }
 }
