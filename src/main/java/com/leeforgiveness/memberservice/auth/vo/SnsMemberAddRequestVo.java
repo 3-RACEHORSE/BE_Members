@@ -12,6 +12,5 @@ public class SnsMemberAddRequestVo {
     private String email;
     private String name;
     private String phoneNum;
-    private List<Map<Long, String>> interestCategories;
 
 }

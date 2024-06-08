@@ -19,7 +19,6 @@ public class MemberDetailResponseDto {
 	private String email;
 	private String name;
 	private String phoneNum;
-	private String handle;
 	private String profileImage;
 	private List<String> watchList;
 	private List<Map<String, Object>> resumeInfo;
@@ -30,10 +29,6 @@ public class MemberDetailResponseDto {
 			memberDetailResponseDto.getEmail(),
 			memberDetailResponseDto.getName(),
 			memberDetailResponseDto.getPhoneNum(),
-			memberDetailResponseDto.getHandle(),
-			memberDetailResponseDto.getProfileImage(),
-			memberDetailResponseDto.getWatchList(),
-			memberDetailResponseDto.getResumeInfo(),
-			memberDetailResponseDto.getCertificationInfo());
+			memberDetailResponseDto.getProfileImage());
 	}
 }

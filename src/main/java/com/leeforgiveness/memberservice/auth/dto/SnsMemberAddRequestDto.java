@@ -18,7 +18,6 @@ public class SnsMemberAddRequestDto {
     private String email;
     private String name;
     private String phoneNum;
-    private List<Map<Long, String>> interestCategories;
 
     public static SnsMemberAddRequestDto voToDto(SnsMemberAddRequestVo snsMemberAddRequestVo) {
         return SnsMemberAddRequestDto.builder()
@@ -27,7 +26,6 @@ public class SnsMemberAddRequestDto {
                 .email(snsMemberAddRequestVo.getEmail())
                 .name(snsMemberAddRequestVo.getName())
                 .phoneNum(snsMemberAddRequestVo.getPhoneNum())
-                .interestCategories(snsMemberAddRequestVo.getInterestCategories())
                 .build();
     }
 }

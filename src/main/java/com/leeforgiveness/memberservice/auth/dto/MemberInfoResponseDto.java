@@ -14,12 +14,10 @@ import lombok.Setter;
 @Builder
 public class MemberInfoResponseDto {
 
-	private String handle;
 	private String profileImage;
 
 	public static MemberInfoResponseVo dtoToVo(MemberInfoResponseDto memberInfoResponseDto) {
 		return new MemberInfoResponseVo(
-			memberInfoResponseDto.getHandle(),
 			memberInfoResponseDto.getProfileImage());
 	}
 }
