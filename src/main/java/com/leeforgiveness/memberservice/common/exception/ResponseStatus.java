@@ -27,14 +27,6 @@ public enum ResponseStatus {
      */
     INTERNAL_SERVER_ERROR(500, "Internal server error"),
 
-    /**
-     * 결제오류 수정예정
-     */
-    ALREADY_PAID_ORDER_ID(1000, "이미 결제된 주문번호입니다"),
-    DOSE_NOT_EXIST_PAYMENT(1001, "결제내역이 존재하지 않습니다"),
-    CANCELED_AMOUNT_EXCEEDED(1002, "취소 금액 한도를 초과하였습니다"),
-    PAYMENT_DATA_TRANSFER_FAILED(1003, "결제 정산 정보 전송에 실패하였습니다"),
-
     // Token, Code
     TOKEN_EXPIRED(401, "토큰이 만료되었습니다."),
     TOKEN_NOT_VALID(401, "토큰이 유효하지 않습니다."),
@@ -65,31 +57,10 @@ public enum ResponseStatus {
     DUPLICATE_SNS_MEMBERS(400, "이미 사용중인 SNS 회원입니다."),
     NO_EXIST_SNS_MEMBERS(404, "가입되지 않은 SNS 멤버 정보입니다."),
 
-    DUPLICATE_HANDLE(400, "이미 사용중인 핸들입니다."),
-
-    /**
-     * 경력
-     */
-    NO_EXIST_CAREER(404, "존재하지 않는 경력입니다"),
-    CAREER_NOT_FOUND(404, "경력을 찾을 수 없습니다."),
-    DUPLICATE_CAREER(400, "이미 등록된 경력입니다"),
-
-    /**
-     * 자격증
-     */
-    NO_EXIST_CERTIFICATE(404, "존재하지 않는 자격증입니다"),
-    CERTIFICATE_NOT_FOUND(404, "자격증을 찾을 수 없습니다."),
-    DUPLICATE_CERTIFICATE(400, "이미 등록된 자격증입니다"),
-
     /**
      * 신고
      */
     DUPLICATE_REPORT(400, "이미 신고한 내역이 있습니다"),
-
-    /**
-     * Review 수정예정
-     */
-    NO_EXIST_REVIEW(5001, "존재하지 않는 리뷰 입니다"),
 
     /**
      * Category Service Error 

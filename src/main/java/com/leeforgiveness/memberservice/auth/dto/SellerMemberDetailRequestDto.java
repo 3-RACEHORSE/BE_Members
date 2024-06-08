@@ -15,13 +15,11 @@ import lombok.Setter;
 public class SellerMemberDetailRequestDto {
 
 	String uuid;
-	String handle;
 
 	public static SellerMemberDetailRequestDto voToDto(
 		SellerMemberDetailRequestVo sellerMemberDetailRequestVo) {
 		return SellerMemberDetailRequestDto.builder()
 			.uuid(sellerMemberDetailRequestVo.getUuid())
-			.handle(sellerMemberDetailRequestVo.getHandle())
 			.build();
 	}
 }

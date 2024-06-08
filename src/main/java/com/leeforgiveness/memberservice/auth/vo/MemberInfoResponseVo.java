@@ -5,11 +5,9 @@ import lombok.Getter;
 @Getter
 public class MemberInfoResponseVo {
 
-	String handle;
 	String profileImage;
 
-	public MemberInfoResponseVo(String handle, String profileImage) {
-		this.handle = handle;
+	public MemberInfoResponseVo(String profileImage) {
 		this.profileImage = profileImage;
 	}
 }

@@ -16,7 +16,6 @@ public class MemberUpdateRequestDto {
 
 	public String name;
 	public String phoneNum;
-	public String handle;
 	public String profileImage;
 
 	public static MemberUpdateRequestDto voToDto(
@@ -24,7 +23,6 @@ public class MemberUpdateRequestDto {
 		return MemberUpdateRequestDto.builder()
 			.name(memberUpdateRequestVo.getName())
 			.phoneNum(memberUpdateRequestVo.getPhoneNum())
-			.handle(memberUpdateRequestVo.getHandle())
 			.profileImage(memberUpdateRequestVo.getProfileImage())
 			.build();
 	}

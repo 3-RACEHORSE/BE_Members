@@ -2,11 +2,10 @@ package com.leeforgiveness.memberservice.auth.presentation;
 
 import com.leeforgiveness.memberservice.auth.application.MemberService;
 import com.leeforgiveness.memberservice.auth.dto.*;
-import com.leeforgiveness.memberservice.auth.vo.MemberInfoResponseVo;
+import com.leeforgiveness.memberservice.auth.vo.MemberDetailResponseVo;
+import com.leeforgiveness.memberservice.auth.vo.MemberReportRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.MemberSnsLoginRequestVo;
-import com.leeforgiveness.memberservice.auth.vo.MemberUuidResponseVo;
-import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailRequestVo;
-import com.leeforgiveness.memberservice.auth.vo.SellerMemberDetailResponseVo;
+import com.leeforgiveness.memberservice.auth.vo.MemberUpdateRequestVo;
 import com.leeforgiveness.memberservice.auth.vo.SnsMemberAddRequestVo;
 import com.leeforgiveness.memberservice.common.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,8 +20,8 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RequiredArgsConstructor
 @Tag(name = "회원", description = "회원 관리 API")
-@RequestMapping("/api/v1/non-authorization/users")
-public class NonAuthorizationMemberController {
+@RequestMapping("/api/v1/users")
+public class MemberController {
 
 	private final MemberService memberService;
 
@@ -48,32 +47,34 @@ public class NonAuthorizationMemberController {
 			.body(new SuccessResponse<>(null));
 	}
 
-	@GetMapping("/profile/{handle}")
-	@Operation(summary = "판매자 프로필 조회", description = "판매자 프로필 조회")
-	public SuccessResponse<SellerMemberDetailResponseVo> sellerMemberDetail(
-		@RequestHeader(required = false) String uuid,
-		@PathVariable String handle) {
-		return new SuccessResponse<>(
-			SellerMemberDetailResponseDto.dtoToVo(
-				memberService.findSellerMember(SellerMemberDetailRequestDto.voToDto(
-					(SellerMemberDetailRequestVo.builder()
-						.uuid(uuid)
-						.handle(handle)
-						.build())))));
+	@GetMapping("/myprofile")
+	@Operation(summary = "사용자 프로필 조회", description = "사용자 프로필 조회")
+	public SuccessResponse<MemberDetailResponseVo> memberDetail(@RequestHeader String uuid) {
+		return new SuccessResponse<>(MemberDetailResponseDto.dtoToVo(
+			memberService.findMember(uuid)));
 	}
 
-	@GetMapping("/datarequest/with-handle")
-	@Operation(summary = "핸들로 사용자 정보 조회(백엔드 통신)", description = "핸들로 사용자 정보 조회(백엔드 통신)")
-	public SuccessResponse<MemberUuidResponseVo> memberUuid(@RequestParam String handle) {
-		return new SuccessResponse<>(
-			MemberUuidResponseDto.dtoToVo(memberService.findMemberUuid(handle)));
+	@PatchMapping("/delete")
+	@Operation(summary = "회원 탈퇴", description = "회원 탈퇴")
+	public SuccessResponse<Object> deleteMember(@RequestHeader String uuid) {
+		memberService.removeMember(uuid);
+		return new SuccessResponse<>(null);
 	}
 
-	@GetMapping("/datarequest/with-uuid/{uuid}")
-	@Operation(summary = "uuid로 사용자 핸들정보 조회(백엔드 통신)", description = "uuid로 사용자 핸들정보 조회(백엔드 통신)")
-	public SuccessResponse<MemberInfoResponseVo> memberHandle(@PathVariable String uuid) {
-		return new SuccessResponse<>(
-			MemberInfoResponseDto.dtoToVo(memberService.findMemberHandleandProfileImage(uuid)));
+	@PatchMapping("/modify")
+	@Operation(summary = "회원 정보 수정", description = "회원 정보 수정")
+	public SuccessResponse<Object> modifyMember(@RequestHeader String uuid,
+		@RequestBody MemberUpdateRequestVo memberUpdateRequestVo) {
+		memberService.updateMember(uuid,
+			MemberUpdateRequestDto.voToDto(memberUpdateRequestVo));
+		return new SuccessResponse<>(null);
 	}
 
+	@PostMapping("/report")
+	@Operation(summary = "신고하기", description = "신고하기")
+	public SuccessResponse<Object> reportMember(@RequestHeader String uuid,
+		@RequestBody MemberReportRequestVo memberReportRequestVo) {
+		memberService.addReport(uuid, MemberReportRequestDto.voToDto(memberReportRequestVo));
+		return new SuccessResponse<>(null);
+	}
 }

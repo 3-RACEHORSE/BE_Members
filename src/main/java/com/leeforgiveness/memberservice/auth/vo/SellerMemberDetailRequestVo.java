@@ -10,5 +10,4 @@ import lombok.Setter;
 public class SellerMemberDetailRequestVo {
 
 	String uuid;
-	String handle;
 }
