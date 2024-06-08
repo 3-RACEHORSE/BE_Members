@@ -23,8 +23,6 @@ public class Member {
 	private String phoneNum;
 	@Column(name = "uuid", nullable = false)
 	private String uuid;
-	@Column(name = "handle", nullable = false, length = 40)
-	private String handle;
 	@Column(name = "termination_status", nullable = false)
 	private boolean terminationStatus;
 	@Column(name = "profile_image")
@@ -32,13 +30,12 @@ public class Member {
 
 	@Builder
 	public Member(Long id, String email, String name, String phoneNum, String uuid,
-		String handle, boolean terminationStatus, String profileImage) {
+		boolean terminationStatus, String profileImage) {
 		this.id = id;
 		this.email = email;
 		this.name = name;
 		this.phoneNum = phoneNum;
 		this.uuid = uuid;
-		this.handle = handle;
 		this.terminationStatus = terminationStatus;
 		this.profileImage = profileImage;
 	}
