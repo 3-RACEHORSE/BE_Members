@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 
-import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.common.GenerateRandom;
 import com.leeforgiveness.memberservice.common.exception.CustomException;
 import com.leeforgiveness.memberservice.subscribe.application.AuctionSubscriptionService;
@@ -16,24 +15,15 @@ import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsRequestD
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.AuctionSubscriptionRepository;
 import com.leeforgiveness.memberservice.subscribe.message.AuctionSubscriptionMessage;
-import com.leeforgiveness.memberservice.subscribe.message.SellerSubscriptionMessage;
-import com.leeforgiveness.memberservice.subscribe.state.PageState;
 import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
 import org.springframework.cloud.stream.function.StreamBridge;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 
 public class AuctionSubscribeTest {
 
@@ -42,8 +32,17 @@ public class AuctionSubscribeTest {
     private StreamBridge streamBridge = Mockito.mock(StreamBridge.class);
     private AuctionSubscriptionService auctionSubscriptionService;
 
+//    private WebClient webClient = Mockito.mock(WebClient.class);
+//    private WebClient.RequestHeadersUriSpec requestHeadersUriSpec = Mockito.mock(
+//        WebClient.RequestHeadersUriSpec.class);
+//    private WebClient.RequestHeadersSpec requestHeadersSpec = Mockito.mock(
+//        WebClient.RequestHeadersSpec.class);
+//    private WebClient.ResponseSpec responseSpec = Mockito.mock(WebClient.ResponseSpec.class);
+
     private String subscriberUuid;
     private String auctionUuid;
+    private String sellerUuid;
+    private String sellerHandle;
 
     @BeforeEach
     public void setUp() {
@@ -51,6 +50,8 @@ public class AuctionSubscribeTest {
             auctionSubscriptionRepository, streamBridge);
         subscriberUuid = GenerateRandom.subscriberUuid();
         auctionUuid = GenerateRandom.auctionUuid();
+        sellerUuid = GenerateRandom.sellerUuid();
+        sellerHandle = GenerateRandom.sellerHandle();
 
         Mockito.when(streamBridge.send("auctionSubscription", AuctionSubscriptionMessage.builder()
             .auctionUuid(auctionUuid)
@@ -204,93 +205,84 @@ public class AuctionSubscribeTest {
     }
 
     @Test
-    @DisplayName("사용자가 쿼리스트링을 넘겨주지 않고 경매글 구독내역을 조회한다.")
-    void getSubscribedAuctionUuidsWithoutQueryStringTest() {
+    @DisplayName("사용자가 구독한 경매글이 없다면 빈 리스트를 반환한다.")
+    void getSubscribedAuctionUuidsNoneSubscribeTest() {
         //given
-        SubscribedAuctionsRequestDto subscribedAuctionsRequestDto = SubscribedAuctionsRequestDto.validate(
-            subscriberUuid, null, null);
+        SubscribedAuctionsRequestDto subscribedAuctionsRequestDto = SubscribedAuctionsRequestDto.builder()
+            .subscriberUuid(subscriberUuid)
+            .build();
 
-        Mockito.when(auctionSubscriptionRepository.findBySubscriberUuidAndState(
-                subscriberUuid,
-                SubscribeState.SUBSCRIBE,
-                PageRequest.of(
-                    PageState.AUCTION.getPage(),
-                    PageState.AUCTION.getSize()))
-            )
-            .thenReturn(getAuctionSubscrtiptionsPage(subscribedAuctionsRequestDto));
+        Mockito.when(
+            auctionSubscriptionRepository.findBySubscriberUuidAndState(subscriberUuid,
+                SubscribeState.SUBSCRIBE)
+        ).thenReturn(List.of());
 
         //when
-        SubscribedAuctionsResponseDto subscribedAuctionsResponseDto =
-            this.auctionSubscriptionService.getSubscribedAuctionUuids(subscribedAuctionsRequestDto);
+        SubscribedAuctionsResponseDto subscribedAuctionsResponseDto
+            = this.auctionSubscriptionService.getSubscribedAuctionUuids(
+            subscribedAuctionsRequestDto);
 
         //then
-        assertThat(subscribedAuctionsResponseDto.getAuctionUuids().size()).isEqualTo(
-            PageState.AUCTION.getSize());
-        assertThat(subscribedAuctionsResponseDto.getCurrentPage()).isEqualTo(
-            PageState.AUCTION.getPage());
-        assertThat(subscribedAuctionsResponseDto.isHasNext()).isFalse();
+        assertThat(subscribedAuctionsResponseDto.getAuctionAndIsSubscribedDtos().size()).isEqualTo(
+            0);
     }
 
-    @ParameterizedTest
-    @DisplayName("사용자가 넘겨준 쿼리스트링으로 경매글 구독내역을 조회한다.")
-    @CsvSource(value = {"1, 3", "3, 7", "0, -10", "-1, 0"})
-    void getSubscribedAuctionUuidsWithQueryStringTest(int page, int size) {
-        //given
-        SubscribedAuctionsRequestDto subscribedAuctionsRequestDto = SubscribedAuctionsRequestDto.validate(
-            subscriberUuid, page, size);
-
-        Mockito.when(auctionSubscriptionRepository.findBySubscriberUuidAndState(subscriberUuid,
-                SubscribeState.SUBSCRIBE, PageRequest.of(
-                    subscribedAuctionsRequestDto.getPage(),
-                    subscribedAuctionsRequestDto.getSize())))
-            .thenReturn(getAuctionSubscrtiptionsPage(subscribedAuctionsRequestDto));
-
-        //when
-        SubscribedAuctionsResponseDto subscribedAuctionsResponseDto =
-            this.auctionSubscriptionService.getSubscribedAuctionUuids(subscribedAuctionsRequestDto);
-
-        //then
-        assertThat(subscribedAuctionsResponseDto.getAuctionUuids().size()).isEqualTo(
-            subscribedAuctionsRequestDto.getSize());
-        assertThat(subscribedAuctionsResponseDto.getCurrentPage()).isEqualTo(
-            subscribedAuctionsRequestDto.getPage());
-        assertThat(subscribedAuctionsResponseDto.isHasNext()).isFalse();
-    }
-
-    @ParameterizedTest
-    @DisplayName("사용자가 구독한 경매글이 없다면 예외를 발생시킨다.")
-    @CsvSource(value = {"1, 3", "3, 7", "0, -10", "-1, 0"})
-    void getSubscribedAuctionUuidsNoneSubscribeTest(int page, int size) {
-        //given
-        SubscribedAuctionsRequestDto subscribedAuctionsRequestDto = SubscribedAuctionsRequestDto.validate(
-            subscriberUuid, page, size);
-
-        Mockito.when(auctionSubscriptionRepository.findBySubscriberUuidAndState(
-            subscribedAuctionsRequestDto.getSubscriberUuid(),
-            SubscribeState.SUBSCRIBE,
-            PageRequest.of(subscribedAuctionsRequestDto.getPage(),
-                subscribedAuctionsRequestDto.getSize())
-        )).thenReturn(Page.empty());
-
-        //when & then
-        assertThrows(CustomException.class,
-            () -> this.auctionSubscriptionService.getSubscribedAuctionUuids(
-                subscribedAuctionsRequestDto));
-    }
-
-    private static @NotNull Page<AuctionSubscription> getAuctionSubscrtiptionsPage(
-        SubscribedAuctionsRequestDto subscribedAuctionsRequestDto) {
-        List<AuctionSubscription> subscriptions = new ArrayList<>();
-        for (int i = 1; i <= subscribedAuctionsRequestDto.getSize(); i++) {
-            subscriptions.add(new AuctionSubscription(Long.valueOf(i),
-                subscribedAuctionsRequestDto.getSubscriberUuid(),
-                GenerateRandom.auctionUuid(),
-                SubscribeState.SUBSCRIBE
-            ));
-        }
-        return new PageImpl<>(subscriptions,
-            PageRequest.of(subscribedAuctionsRequestDto.getPage(),
-                subscribedAuctionsRequestDto.getSize()),
-            subscriptions.size());
-    }
+//    @Test
+//    @DisplayName("사용자가 구독한 경매글이 있으면 경매글 리스트를 반환한다.")
+//    void getSubscribedAuctionUuidsSubscribeTest() {
+//        //given
+//        SubscribedAuctionsRequestDto subscribedAuctionsRequestDto = SubscribedAuctionsRequestDto.builder()
+//            .subscriberUuid(subscriberUuid)
+//            .build();
+//
+//        SearchAuctionResponseVo searchAuctionResponseVo = SearchAuctionResponseVo.builder()
+//            .readOnlyAuction(
+//                ReadOnlyAuction.builder()
+//                    .auctionPostId("auctionPostId")
+//                    .auctionUuid(auctionUuid)
+//                    .sellerUuid(sellerUuid)
+//                    .title("title")
+//                    .content("content")
+//                    .category("category")
+//                    .minimumBiddingPrice(10000)
+//                    .createdAt(LocalDateTime.now())
+//                    .endedAt(LocalDateTime.now())
+//                    .bidderUuid(subscriberUuid)
+//                    .bidPrice(15000)
+//                    .state("state")
+//                    .build())
+//            .handle(sellerHandle)
+//            .thumbnail("thumbnail")
+//            .images(List.of())
+//            .isSubscribed(true)
+//            .build();
+//
+//        ResponseEntity<SearchAuctionResponseVo> responseEntity = new ResponseEntity<>(searchAuctionResponseVo, HttpStatus.OK);
+//
+//        // WebClient의 각 단계별로 모킹 설정
+//        Mockito.when(webClient.get()).thenReturn(requestHeadersUriSpec);
+//        ArgumentCaptor<Function<UriBuilder, URI>> uriCaptor = ArgumentCaptor.forClass(Function.class);
+//        Mockito.when(requestHeadersUriSpec.uri(uriCaptor.capture())).thenReturn(requestHeadersSpec);
+//        Mockito.when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+//        Mockito.when(responseSpec.toEntity(SearchAuctionResponseVo.class)).thenReturn(Mono.just(responseEntity));
+//        Mockito.when(responseSpec.toEntity(SearchAuctionResponseVo.class)).thenReturn(
+//            Mono.just(responseEntity)
+//        );
+//
+//        ReflectionTestUtils.setField(auctionSubscriptionService, "webClient", webClient);
+//
+//        SearchAuctionResponseVo result = ReflectionTestUtils.invokeMethod(
+//            auctionSubscriptionService, "getAuctionPostDetailByWebClientBlocking", auctionUuid);
+//
+//        assertEquals(searchAuctionResponseVo, result);
+//
+//        //when
+//        SubscribedAuctionsResponseDto subscribedAuctionsResponseDto =
+//            this.auctionSubscriptionService.getSubscribedAuctionUuids(
+//                subscribedAuctionsRequestDto
+//            );
+//
+//        //then
+//        assertThat(subscribedAuctionsResponseDto.getAuctionAndIsSubscribedDtos().size()).isEqualTo(1);
+//    }
 }

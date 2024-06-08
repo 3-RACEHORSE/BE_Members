@@ -1,23 +1,27 @@
 package com.leeforgiveness.memberservice.subscribe.application;
 
+import com.leeforgiveness.memberservice.common.ServerPath;
 import com.leeforgiveness.memberservice.common.exception.CustomException;
 import com.leeforgiveness.memberservice.common.exception.ResponseStatus;
 import com.leeforgiveness.memberservice.subscribe.domain.AuctionSubscription;
+import com.leeforgiveness.memberservice.subscribe.dto.AuctionAndIsSubscribedDto;
 import com.leeforgiveness.memberservice.subscribe.dto.AuctionSubscribeRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedAuctionsResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.AuctionSubscriptionRepository;
-import com.leeforgiveness.memberservice.subscribe.state.PageState;
 import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
+import com.leeforgiveness.memberservice.subscribe.vo.SearchAuctionResponseVo;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.stream.function.StreamBridge;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,7 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
 
     private final AuctionSubscriptionRepository auctionSubscriptionRepository;
     private final StreamBridge streamBridge;
+    private WebClient webClient;
 
     @Override
     @Transactional
@@ -126,47 +131,68 @@ public class AuctionSubscriptionServiceImpl implements AuctionSubscriptionServic
         }
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public SubscribedAuctionsResponseDto getSubscribedAuctionUuids(
         SubscribedAuctionsRequestDto subscribedAuctionsRequestDto) {
-        int page = subscribedAuctionsRequestDto.getPage();
-        int size = subscribedAuctionsRequestDto.getSize();
+        List<AuctionSubscription> auctionSubscriptions = this.auctionSubscriptionRepository.findBySubscriberUuidAndState(
+            subscribedAuctionsRequestDto.getSubscriberUuid(), SubscribeState.SUBSCRIBE);
 
-        if (page < 0) {
-            page = PageState.AUCTION.getPage();
+        log.info("Subscribed auction uuids: {}", auctionSubscriptions);
+        if (auctionSubscriptions.isEmpty()) {
+            return SubscribedAuctionsResponseDto.builder().auctionAndIsSubscribedDtos(List.of())
+                .build();
         }
 
-        if (size <= 0) {
-            size = PageState.AUCTION.getSize();
-        }
+        List<AuctionAndIsSubscribedDto> auctionAndIsSubscribedDtos = new ArrayList<>();
 
-        Page<AuctionSubscription> auctionSubscriptionPage = Page.empty();
+        //TODO: 여러번 통신하지 말고 한 번만 통신하기
+        for (AuctionSubscription auctionSubscription : auctionSubscriptions) {
+            SearchAuctionResponseVo searchAuctionResponseVo = getAuctionPostDetailByWebClientBlocking(
+                auctionSubscription.getAuctionUuid());
+            auctionAndIsSubscribedDtos.add(
+                AuctionAndIsSubscribedDto.builder()
+                    .auctionUuid(searchAuctionResponseVo.getReadOnlyAuction().getAuctionUuid())
+                    .handle(searchAuctionResponseVo.getHandle())
+                    .sellerUuid(searchAuctionResponseVo.getReadOnlyAuction().getSellerUuid())
+                    .title(searchAuctionResponseVo.getReadOnlyAuction().getTitle())
+                    .content(searchAuctionResponseVo.getReadOnlyAuction().getContent())
+                    .category(searchAuctionResponseVo.getReadOnlyAuction().getCategory())
+                    .minimumBiddingPrice(searchAuctionResponseVo.getReadOnlyAuction()
+                        .getMinimumBiddingPrice())
+                    .thumbnail(searchAuctionResponseVo.getThumbnail())
+                    .createdAt(searchAuctionResponseVo.getReadOnlyAuction().getCreatedAt())
+                    .endedAt(searchAuctionResponseVo.getReadOnlyAuction().getEndedAt())
+                    .isSubscribed(true)
+                    .build()
+            );
+        }
+        return SubscribedAuctionsResponseDto.builder()
+            .auctionAndIsSubscribedDtos(auctionAndIsSubscribedDtos)
+            .build();
+    }
+
+    private SearchAuctionResponseVo getAuctionPostDetailByWebClientBlocking(String auctionUuid) {
+        webClient = WebClient.create(ServerPath.AUCTION_SERVICE.getServer());
 
         try {
-            auctionSubscriptionPage = this.auctionSubscriptionRepository.findBySubscriberUuidAndState(
-                subscribedAuctionsRequestDto.getSubscriberUuid(),
-                SubscribeState.SUBSCRIBE,
-                PageRequest.of(page, size)
-            );
+            ResponseEntity<SearchAuctionResponseVo> responseEntity = webClient.get()
+                .uri(uriBuilder -> uriBuilder.path(ServerPath.GET_AUCTION_POST_DETAIL.getServer())
+                    .build(auctionUuid))
+                .retrieve().toEntity(SearchAuctionResponseVo.class).block();
+
+            if (responseEntity == null || responseEntity.getBody() == null) {
+                throw new CustomException(ResponseStatus.INTERNAL_SERVER_ERROR);
+            }
+            return responseEntity.getBody();
+        } catch (WebClientResponseException e) {
+            log.info("getAuctionPostDetailByWebClientBlocking >>> {}: {}", e.getStatusCode(),
+                e.getResponseBodyAsString());
+            throw new CustomException(ResponseStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
-            log.error("Error while paging auction_subscription:", e);
-            throw new CustomException(ResponseStatus.DATABASE_READ_FAIL);
+            log.info("getAuctionPostDetailByWebClientBlocking >>> {}", e.getMessage());
+            throw new CustomException(ResponseStatus.INTERNAL_SERVER_ERROR);
         }
-
-        if (auctionSubscriptionPage.isEmpty()) {
-            throw new CustomException(ResponseStatus.NO_DATA);
-        }
-
-        List<String> auctionUuids = auctionSubscriptionPage.get()
-            .map(AuctionSubscription::getAuctionUuid).toList();
-
-        return SubscribedAuctionsResponseDto.builder()
-            .auctionUuids(auctionUuids)
-            .currentPage(page)
-            .hasNext(auctionSubscriptionPage.hasNext())
-            .build();
     }
 
     @Override

@@ -53,14 +53,12 @@ public class AuctionSubscriptionController {
     @GetMapping
     @Operation(summary = "경매글 구독 조회", description = "경매글 구독내역을 페이지로 조회합니다.")
     public SuccessResponse<SubscribedAuctionsResponseVo> getAuctionSubscribe(
-        @RequestHeader String uuid,
-        @RequestParam(required = false) Integer page,
-        @RequestParam(required = false) Integer size
+        @RequestHeader String uuid
     ) {
         return new SuccessResponse<>(
             SubscribedAuctionsResponseDto.dtoToVo(
                 this.auctionSubscriptionService.getSubscribedAuctionUuids(
-                    SubscribedAuctionsRequestDto.validate(uuid, page, size))));
+                    SubscribedAuctionsRequestDto.builder().subscriberUuid(uuid).build())));
     }
 
     @GetMapping("/is-subscribed")
