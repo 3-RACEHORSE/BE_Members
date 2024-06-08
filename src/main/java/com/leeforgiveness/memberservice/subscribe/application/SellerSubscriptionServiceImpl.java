@@ -9,20 +9,14 @@ import com.leeforgiveness.memberservice.subscribe.dto.SellerSubscribeRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedSellersResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.SellerSubscriptionRepository;
-import com.leeforgiveness.memberservice.subscribe.message.AuctionSubscriptionMessage;
-import com.leeforgiveness.memberservice.subscribe.message.SellerSubscriptionMessage;
 import com.leeforgiveness.memberservice.subscribe.state.PageState;
 import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -35,16 +29,15 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
 
     private final SellerSubscriptionRepository sellerSubscriptionRepository;
     private final MemberRepository memberRepository;
-    private final StreamBridge streamBridge;
 
     // 판매자의 핸들로 uuid 조회
     private String getSellerUuid(String sellerHandle) {
         try {
-            Optional<Member> memberOptional = memberRepository.findByHandle(sellerHandle);
-            if (memberOptional.isEmpty()) {
-                throw new CustomException(ResponseStatus.USER_NOT_FOUND);
-            }
-            return memberOptional.get().getUuid();
+//            Optional<Member> memberOptional = memberRepository.findByHandle(sellerHandle);
+//            if (memberOptional.isEmpty()) {
+//                throw new CustomException(ResponseStatus.USER_NOT_FOUND);
+//            }
+            return "influencerUuid";
         } catch (Exception e) {
             log.error("Error while reading member:", e);
             throw new CustomException(ResponseStatus.DATABASE_READ_FAIL);
@@ -75,12 +68,6 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
         } else if (sellerSubscriptionOptional.get().getState() == SubscribeState.UNSUBSCRIBE) {
             subscribeCanceledSeller(sellerSubscriptionOptional.get());
         }
-
-        streamBridge.send("sellerSubscription", SellerSubscriptionMessage.builder()
-            .sellerUuid(sellerUuid)
-            .subscribeState(SubscribeState.SUBSCRIBE)
-            .eventTime(LocalDateTime.now())
-            .build());
     }
 
     //구독 취소했던 판매자를 다시 구독
@@ -118,7 +105,8 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
 
         String sellerUuid = getSellerUuid(sellerHandle);
 
-        Optional<SellerSubscription> sellerSubscriptionOptional = getSellerSubscription(subscriberUuid, sellerUuid);
+        Optional<SellerSubscription> sellerSubscriptionOptional = getSellerSubscription(
+            subscriberUuid, sellerUuid);
 
         if (sellerSubscriptionOptional.isEmpty()
             || sellerSubscriptionOptional.get().getState() == SubscribeState.UNSUBSCRIBE) {
@@ -193,7 +181,7 @@ public class SellerSubscriptionServiceImpl implements SellerSubscriptionService 
         List<Map<String, String>> sellerInfos = getSellers(sellerUuids).stream()
             .map(member -> {
                 Map<String, String> info = new HashMap<>();
-                info.put("handle", member.getHandle());
+                info.put("name", member.getName());
                 info.put("profileImage", member.getProfileImage());
                 return info;
             })
