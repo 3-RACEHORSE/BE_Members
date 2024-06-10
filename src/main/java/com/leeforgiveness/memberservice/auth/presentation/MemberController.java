@@ -25,28 +25,6 @@ public class MemberController {
 
 	private final MemberService memberService;
 
-	@PostMapping("/signup")
-	@Operation(summary = "SNS 회원가입", description = "SNS 회원가입")
-	public SuccessResponse<Object> snsAddMember(
-		@RequestBody SnsMemberAddRequestVo snsMemberAddRequestvo) {
-		log.info(snsMemberAddRequestvo.toString());
-		memberService.snsAddMember(SnsMemberAddRequestDto.voToDto(snsMemberAddRequestvo));
-		return new SuccessResponse<>(null);
-	}
-
-	@PostMapping("/login")
-	@Operation(summary = "로그인", description = "로그인")
-	public ResponseEntity<SuccessResponse<Object>> login(
-		@RequestBody MemberSnsLoginRequestVo memberSnsLoginRequestVo) {
-		TokenResponseDto tokenResponseDto = memberService.snsLogin(
-			MemberSnsLoginRequestDto.voToDto(memberSnsLoginRequestVo));
-
-		return ResponseEntity.ok()
-			.header(HttpHeaders.AUTHORIZATION, tokenResponseDto.getAccessToken())
-			.header("uuid", tokenResponseDto.getUuid())
-			.body(new SuccessResponse<>(null));
-	}
-
 	@GetMapping("/myprofile")
 	@Operation(summary = "사용자 프로필 조회", description = "사용자 프로필 조회")
 	public SuccessResponse<MemberDetailResponseVo> memberDetail(@RequestHeader String uuid) {
