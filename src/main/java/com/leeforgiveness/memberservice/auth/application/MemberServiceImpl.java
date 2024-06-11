@@ -14,6 +14,7 @@ import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.TokenResponseDto;
 import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
+import com.leeforgiveness.memberservice.auth.infrastructure.RefreshTokenCertification;
 import com.leeforgiveness.memberservice.auth.infrastructure.SnsInfoRepository;
 
 import com.leeforgiveness.memberservice.auth.infrastructure.UserReportRepository;
@@ -49,6 +50,7 @@ public class MemberServiceImpl implements MemberService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final UserReportRepository userReportRepository;
 	private final SellerSubscriptionRepository sellerSubscriptionRepository;
+	private final RefreshTokenCertification refreshTokenCertification;
 
 	//이메일 중복 확인
 	private void checkEmailDuplicate(String email) {
@@ -108,6 +110,13 @@ public class MemberServiceImpl implements MemberService {
 		return jwtTokenProvider.generateToken(userDetails);
 	}
 
+	//리프레쉬 토큰 생성
+	private String createRefreshToken(Member member) {
+		UserDetails userDetails = User.withUsername(member.getEmail()).password(member.getUuid())
+			.roles("USER").build();
+		return jwtTokenProvider.generateRefreshToken(userDetails);
+	}
+
 	//	소셜 로그인
 	@Override
 	@Transactional
@@ -122,9 +131,13 @@ public class MemberServiceImpl implements MemberService {
 		}
 
 		String token = createToken(member);
+		String refreshToken = createRefreshToken(member);
+
+		refreshTokenCertification.saveRefreshToken(member.getUuid(), refreshToken);
 
 		return TokenResponseDto.builder()
 			.accessToken(token)
+			.refreshToken(refreshToken)
 			.uuid(member.getUuid())
 			.build();
 	}
