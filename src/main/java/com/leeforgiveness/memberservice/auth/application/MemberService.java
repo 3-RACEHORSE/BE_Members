@@ -15,15 +15,18 @@ public interface MemberService {
 
 	void snsAddMember(SnsMemberAddRequestDto snsMemberAddRequestDto);
 
-    TokenResponseDto snsLogin(MemberSnsLoginRequestDto memberSnsLoginRequestDto);
+	TokenResponseDto snsLogin(MemberSnsLoginRequestDto memberSnsLoginRequestDto);
 
 	MemberDetailResponseDto findMember(String uuid);
 
-	SellerMemberDetailResponseDto findSellerMember(SellerMemberDetailRequestDto sellerMemberDetailRequestDto);
+	SellerMemberDetailResponseDto findSellerMember(
+		SellerMemberDetailRequestDto sellerMemberDetailRequestDto);
 
 	void updateMember(String uuid, MemberUpdateRequestDto memberRequestDto);
 
 	void removeMember(String uuid);
 
 	void addReport(String uuid, MemberReportRequestDto memberReportRequestDto);
+
+	TokenResponseDto tokenReIssue(String receiveToken, String uuid);
 }

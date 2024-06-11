@@ -58,4 +58,17 @@ public class AuthController {
 			.header("uuid", tokenResponseDto.getUuid())
 			.body(new SuccessResponse<>(null));
 	}
+
+	@GetMapping("/reissue")
+	@Operation(summary = "토큰 재발급", description = "토큰 재발급")
+	public ResponseEntity<SuccessResponse<Object>> reissue(@RequestHeader String uuid,
+		@RequestHeader String refreshToken) {
+		TokenResponseDto tokenResponseDto = memberService.tokenReIssue(refreshToken, uuid);
+
+		return ResponseEntity.ok()
+			.header(HttpHeaders.AUTHORIZATION, tokenResponseDto.getAccessToken())
+			.header("RefreshToken", refreshToken)
+			.header("uuid", tokenResponseDto.getUuid())
+			.body(new SuccessResponse<>(null));
+	}
 }
