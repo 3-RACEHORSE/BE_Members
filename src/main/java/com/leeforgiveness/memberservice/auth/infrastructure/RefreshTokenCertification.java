@@ -16,7 +16,6 @@ public class RefreshTokenCertification {
 	private long REFRESH_TOKEN_EXPIRATION_TIME;
 
 	private final String PREFIX = "REFRESH:";
-	private final long EXPIRE_TIME = 259200000;
 
 	private final StringRedisTemplate stringRedisTemplate;
 
@@ -24,7 +23,7 @@ public class RefreshTokenCertification {
 	public void saveRefreshToken(String uuid, String refreshToken) {
 		try {
 			stringRedisTemplate.opsForValue()
-				.set(uuid, refreshToken, Duration.ofSeconds(EXPIRE_TIME));
+				.set(uuid, refreshToken, Duration.ofSeconds(REFRESH_TOKEN_EXPIRATION_TIME));
 			log.info("Successfully saved refreshToken to Redis: uuid={}, refreshToken={}", uuid,
 				refreshToken);
 		} catch (Exception e) {
@@ -32,5 +31,15 @@ public class RefreshTokenCertification {
 				refreshToken);
 			throw e;
 		}
+	}
+
+	//uuid로 refreshToken을 가져옴
+	public String getRefreshToken(String uuid) {
+		return stringRedisTemplate.opsForValue().get(uuid);
+	}
+
+	//uuid로 refreshToken가 있는 지 확인
+	public boolean hasKey(String uuid) {
+		return Boolean.TRUE.equals(stringRedisTemplate.hasKey(uuid));
 	}
 }

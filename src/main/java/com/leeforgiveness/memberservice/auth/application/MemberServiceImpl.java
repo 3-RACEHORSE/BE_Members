@@ -142,6 +142,27 @@ public class MemberServiceImpl implements MemberService {
 			.build();
 	}
 
+	//토큰 재발급
+	@Override
+	public TokenResponseDto tokenReIssue(String receiveToken, String uuid) {
+		Member member = memberRepository.findByUuid(uuid)
+			.orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
+		if (member.isTerminationStatus()) {
+			throw new CustomException(ResponseStatus.WITHDRAWAL_MEMBERS);
+		}
+		if (refreshTokenCertification.hasKey(uuid) && refreshTokenCertification.getRefreshToken(
+			uuid).equals(receiveToken)) {
+			String token = createToken(member);
+			return TokenResponseDto.builder()
+				.accessToken(token)
+				.refreshToken(null)
+				.uuid(member.getUuid())
+				.build();
+		} else {
+			throw new CustomException(ResponseStatus.TOKEN_NOT_VALID);
+		}
+	}
+
 	//회원정보 조회
 	@Override
 	public MemberDetailResponseDto findMember(String uuid) {
