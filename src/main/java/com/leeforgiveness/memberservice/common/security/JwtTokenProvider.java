@@ -35,8 +35,11 @@ public class JwtTokenProvider {
 	@Value("${JWT.SECRET_KEY}")
 	private String secretKey;
 
-	@Value("${JWT.EXPIRATION_TIME}")
+	@Value("${JWT.ACCESS_EXPIRATION_TIME}")
 	private long ACCESS_TOKEN_EXPIRATION_TIME;
+
+	@Value("${JWT.REFRESH_EXPIRATION_TIME}")
+	private long REFRESH_TOKEN_EXPIRATION_TIME;
 
 	public String getUuid(String token) {
 		return extractClaim(token, Claims::getSubject);
@@ -65,6 +68,10 @@ public class JwtTokenProvider {
 		return generateToken(Map.of(), userDetails);
 	}
 
+	public String generateRefreshToken(UserDetails userDetails) {
+		return generateRefreshToken(Map.of(), userDetails);
+	}
+
 	public String generateToken(Map<String, Object> extractClaims, UserDetails userDetails) {
 		log.info("generateToken {}", userDetails);
 		return Jwts.builder()
@@ -77,4 +84,15 @@ public class JwtTokenProvider {
 			.compact();
 	}
 
+	public String generateRefreshToken(Map<String, Object> extractClaims, UserDetails userDetails) {
+		log.info("generateRefreshToken {}", userDetails);
+		return Jwts.builder()
+			.setClaims(extractClaims) //정보저장
+			.setSubject(userDetails.getUsername())
+			.setIssuedAt(new Date(System.currentTimeMillis())) //토근 발행 시간
+			.setExpiration(
+				new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME)) //토큰 만료 시간
+			.signWith(getSigningKey(), SignatureAlgorithm.HS256)
+			.compact();
+	}
 }
