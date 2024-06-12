@@ -12,6 +12,7 @@ import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,8 +75,10 @@ public class JwtTokenProvider {
 
 	public String generateToken(Map<String, Object> extractClaims, UserDetails userDetails) {
 		log.info("generateToken {}", userDetails);
+		Map<String, Object> modifiableExtractClaims = new HashMap<>(extractClaims);
+		modifiableExtractClaims.put("TokenType", "access");
 		return Jwts.builder()
-			.setClaims(extractClaims) //정보저장
+			.setClaims(modifiableExtractClaims) //정보저장
 			.setSubject(userDetails.getUsername())
 			.setIssuedAt(new Date(System.currentTimeMillis())) //토근 발행 시간
 			.setExpiration(
@@ -86,8 +89,10 @@ public class JwtTokenProvider {
 
 	public String generateRefreshToken(Map<String, Object> extractClaims, UserDetails userDetails) {
 		log.info("generateRefreshToken {}", userDetails);
+		Map<String, Object> modifiableExtractClaims = new HashMap<>(extractClaims);
+		modifiableExtractClaims.put("TokenType", "refresh");
 		return Jwts.builder()
-			.setClaims(extractClaims) //정보저장
+			.setClaims(modifiableExtractClaims) //정보저장
 			.setSubject(userDetails.getUsername())
 			.setIssuedAt(new Date(System.currentTimeMillis())) //토근 발행 시간
 			.setExpiration(
