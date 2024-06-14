@@ -105,14 +105,14 @@ public class MemberServiceImpl implements MemberService {
 
 	//	토큰 생성
 	private String createToken(Member member) {
-		UserDetails userDetails = User.withUsername(member.getEmail()).password(member.getUuid())
+		UserDetails userDetails = User.withUsername(member.getUuid()).password(member.getUuid())
 			.roles("USER").build();
 		return jwtTokenProvider.generateToken(userDetails);
 	}
 
 	//리프레쉬 토큰 생성
 	private String createRefreshToken(Member member) {
-		UserDetails userDetails = User.withUsername(member.getEmail()).password(member.getUuid())
+		UserDetails userDetails = User.withUsername(member.getUuid()).password(member.getUuid())
 			.roles("USER").build();
 		return jwtTokenProvider.generateRefreshToken(userDetails);
 	}
