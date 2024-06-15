@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "회원", description = "회원 관리 API")
 @RequestMapping("/api/v1/users")
+@CrossOrigin(value = "*")
 public class MemberController {
 
 	private final MemberService memberService;
