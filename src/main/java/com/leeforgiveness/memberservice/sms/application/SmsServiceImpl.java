@@ -62,7 +62,7 @@ public class SmsServiceImpl implements SmsService {
 		Message message = new Message();
 		message.setFrom(fromNumber);
 		message.setTo(receiverPhoneNum);
-		message.setText(String.format("[천마인력] 본인확인 인증번호 [%s]를 입력해주세요.", randomCode));
+		message.setText(String.format("[MeetPlus] 본인확인 인증번호 [%s]를 입력해주세요.", randomCode));
 
 		smsCertification.createSmsCode(receiverPhoneNum, randomCode);
 
