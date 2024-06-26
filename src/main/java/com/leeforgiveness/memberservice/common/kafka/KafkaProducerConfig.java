@@ -1,5 +1,6 @@
 package com.leeforgiveness.memberservice.common.kafka;
 
+import com.leeforgiveness.memberservice.common.kafka.Topics.Constant;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -35,10 +36,10 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public NewTopic myTopic() {
-        return TopicBuilder.name("alarm-topic")
-            .partitions(1)
-            .replicas(1)
+    public NewTopic chatTopic() {
+        return TopicBuilder.name(Constant.SEND_TO_CHAT)
+            .partitions(2)
+            .replicas(2)
             .config(TopicConfig.RETENTION_MS_CONFIG, String.valueOf(86400000)) // 1일 (24시간) = 86400000 밀리초
             .build();
     }
