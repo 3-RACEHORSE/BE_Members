@@ -10,6 +10,8 @@ import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.TokenResponseDto;
+import com.leeforgiveness.memberservice.auth.vo.SearchForChatRoomVo;
+import java.util.Map;
 
 public interface MemberService {
 
@@ -29,4 +31,6 @@ public interface MemberService {
 	void addReport(String uuid, MemberReportRequestDto memberReportRequestDto);
 
 	TokenResponseDto tokenReIssue(String receiveToken, String uuid);
+
+    void searchProfileImage(SearchForChatRoomVo searchForChatRoomVo);
 }
