@@ -14,6 +14,7 @@ import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.TokenResponseDto;
+import com.leeforgiveness.memberservice.auth.dto.UpdateProfileImageRequestDto;
 import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.RefreshTokenCertification;
 import com.leeforgiveness.memberservice.auth.infrastructure.SnsInfoRepository;
@@ -196,6 +197,15 @@ public class MemberServiceImpl implements MemberService {
         //휴대폰번호 중복 확인
         if (!member.getPhoneNum().equals(memberUpdateRequestDto.getPhoneNum())) {
             checkPhoneNumberDuplicate(memberUpdateRequestDto.getPhoneNum());
+        }
+
+        if (!member.getProfileImage().equals(memberUpdateRequestDto.getProfileImage())) {
+            UpdateProfileImageRequestDto updateProfileImageRequestDto =
+                UpdateProfileImageRequestDto.builder()
+                    .memberUuid(memberUuid)
+                    .profileImage(memberUpdateRequestDto.getProfileImage())
+                    .build();
+            producer.sendMessage(Constant.CHANGE_PROFILE_IMAGE,updateProfileImageRequestDto);
         }
 
         memberRepository.save(Member.builder()
