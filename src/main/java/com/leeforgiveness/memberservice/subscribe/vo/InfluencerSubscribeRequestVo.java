@@ -3,6 +3,6 @@ package com.leeforgiveness.memberservice.subscribe.vo;
 import lombok.Getter;
 
 @Getter
-public class SellerSubscribeRequestVo {
-    private String sellerHandle;
+public class InfluencerSubscribeRequestVo {
+    private String influencerUuid;
 }
