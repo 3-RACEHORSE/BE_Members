@@ -9,6 +9,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Slf4j
 @Service
 public class ExternalService {
+
+    private static final Duration TIMEOUT_DURATION = Duration.ofSeconds(10);
 
     public List<InfluencerSummaryDto> getInfluencerSummarise(String authorization,
         List<String> influencerUuids) {
@@ -35,7 +38,7 @@ public class ExternalService {
                 .GET()
                 .build();
 
-            HttpClient client = HttpClient.newHttpClient();
+            HttpClient client = HttpClient.newBuilder().connectTimeout(TIMEOUT_DURATION).build();
             HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
             String responseBody = response.body();
             JSONArray jsonArray = new JSONArray(responseBody);
