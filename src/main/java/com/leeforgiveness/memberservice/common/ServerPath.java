@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ServerPath {
 
-    AUCTION_SERVICE("http://52.79.127.196:8000/auction-service"),
-    GET_AUCTION_POST_DETAIL("/api/v1/non-authorization/auction/{auctionUuid}");
+    INFLUENCER_SUMMARISE(
+        "https://racehorseteam.store/auctionpost-service/api/v1/influencer/summarise");
 
-    private final String server;
+    private final String url;
 }
