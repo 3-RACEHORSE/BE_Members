@@ -18,31 +18,31 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 
 @Entity
-@Table(name = "seller_subscription")
+@Table(name = "influencer_subscription")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
-public class SellerSubscription extends BaseTimeEntity {
+public class InfluencerSubscription extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "seller_subscription_id")
+    @Column(name = "influencer_subscription_id")
     private Long id;
-    @Column(name = "subscriber_uuid", nullable = false)
+    @Column(name = "subscriber_uuid", nullable = false, length = 36)
     private String subscriberUuid;
-    @Column(name = "seller_uuid", nullable = false)
-    private String sellerUuid;
-    @Column(name = "state", nullable = false)
+    @Column(name = "influencer_uuid", nullable = false, length = 10)
+    private String influencerUuid;
+    @Column(name = "state", nullable = false, length = 10)
     @ColumnDefault(value = "'SUBSCRIBE'")
     @Enumerated(EnumType.STRING)
     private SubscribeState state;
 
     @Builder
-    public SellerSubscription(Long id, String subscriberUuid, String sellerUuid,
+    public InfluencerSubscription(Long id, String subscriberUuid, String influencerUuid,
         SubscribeState state) {
         this.id = id;
         this.subscriberUuid = subscriberUuid;
-        this.sellerUuid = sellerUuid;
+        this.influencerUuid = influencerUuid;
         this.state = state;
     }
 }
