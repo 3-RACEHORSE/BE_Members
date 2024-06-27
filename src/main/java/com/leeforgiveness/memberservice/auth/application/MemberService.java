@@ -1,36 +1,28 @@
 package com.leeforgiveness.memberservice.auth.application;
 
 import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
-import com.leeforgiveness.memberservice.auth.dto.MemberInfoResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberReportRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSnsLoginRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
-import com.leeforgiveness.memberservice.auth.dto.MemberUuidResponseDto;
-import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailRequestDto;
-import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.TokenResponseDto;
 import com.leeforgiveness.memberservice.auth.vo.SearchForChatRoomVo;
-import java.util.Map;
 
 public interface MemberService {
 
-	void snsAddMember(SnsMemberAddRequestDto snsMemberAddRequestDto);
+    void snsAddMember(SnsMemberAddRequestDto snsMemberAddRequestDto);
 
-	TokenResponseDto snsLogin(MemberSnsLoginRequestDto memberSnsLoginRequestDto);
+    TokenResponseDto snsLogin(MemberSnsLoginRequestDto memberSnsLoginRequestDto);
 
-	MemberDetailResponseDto findMember(String uuid);
+    MemberDetailResponseDto findMember(String uuid);
 
-	SellerMemberDetailResponseDto findSellerMember(
-		SellerMemberDetailRequestDto sellerMemberDetailRequestDto);
+    void updateMember(String uuid, MemberUpdateRequestDto memberRequestDto);
 
-	void updateMember(String uuid, MemberUpdateRequestDto memberRequestDto);
+    void removeMember(String uuid);
 
-	void removeMember(String uuid);
+    void addReport(String uuid, MemberReportRequestDto memberReportRequestDto);
 
-	void addReport(String uuid, MemberReportRequestDto memberReportRequestDto);
-
-	TokenResponseDto tokenReIssue(String receiveToken, String uuid);
+    TokenResponseDto tokenReIssue(String receiveToken, String uuid);
 
     void searchProfileImage(SearchForChatRoomVo searchForChatRoomVo);
 }
