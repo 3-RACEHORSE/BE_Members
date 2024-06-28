@@ -13,6 +13,7 @@ import com.leeforgiveness.memberservice.subscribe.application.ExternalService;
 import com.leeforgiveness.memberservice.subscribe.application.InfluencerSubscriptionServiceImpl;
 import com.leeforgiveness.memberservice.subscribe.domain.InfluencerSubscription;
 import com.leeforgiveness.memberservice.subscribe.dto.InfluencerSubscribeRequestDto;
+import com.leeforgiveness.memberservice.subscribe.dto.InfluencerSummaryDto;
 import com.leeforgiveness.memberservice.subscribe.vo.SubscribedInfluencerRequestVo;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedInfluencerResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.InfluencerSubscriptionRepository;
@@ -46,7 +47,7 @@ public class InfluencerSubscribeTest {
 
     @Test
     @DisplayName("사용자가 구독한 적이 없던 인플루언서를 구독한다.")
-    void subscribeNewSellerTest() {
+    void subscribeNewInfluencerTest() {
         //given
         Mockito.when(
                 influencerSubscriptionRepository.findBySubscriberUuidAndInfluencerUuid(
@@ -73,7 +74,7 @@ public class InfluencerSubscribeTest {
 
     @Test
     @DisplayName("사용자가 구독 취소했던 인플루언서를 다시 구독한다.")
-    void subscribeSellerAgainTest() {
+    void subscribeInfluencerAgainTest() {
         //given
         InfluencerSubscription influencerSubscription = InfluencerSubscription.builder()
             .id(1L)
@@ -105,7 +106,7 @@ public class InfluencerSubscribeTest {
 
     @Test
     @DisplayName("사용자가 이미 구독했던 인플루언서를 구독하면 예외를 발생시킨다.")
-    void subscribeAlreadySubscribedSellerExceptionTest() {
+    void subscribeAlreadySubscribedInfluencerExceptionTest() {
         //given
         Mockito.when(
                 influencerSubscriptionRepository.findBySubscriberUuidAndInfluencerUuid(
@@ -121,7 +122,7 @@ public class InfluencerSubscribeTest {
 
     @Test
     @DisplayName("사용자가 구독 중인 인플루언서를 구독취소한다.")
-    void unsubscribeSellerTest() {
+    void unsubscribeInfluencerTest() {
         //given
         InfluencerSubscription influencerSubscription = InfluencerSubscription.builder()
             .id(1L)
@@ -154,7 +155,7 @@ public class InfluencerSubscribeTest {
 
     @Test
     @DisplayName("사용자가 구독한 적이 없는 인플루언서를 구독취소하면 예외를 발생시킨다.")
-    void unsubscribeNewSellerExceptionTest() {
+    void unsubscribeNewInfluencerExceptionTest() {
         //given
         Mockito.when(
             influencerSubscriptionRepository.findBySubscriberUuidAndInfluencerUuid(
@@ -170,7 +171,7 @@ public class InfluencerSubscribeTest {
 
     @Test
     @DisplayName("사용자가 구독 취소했던 인플루언서를 구독취소하면 예외를 발생시킨다.")
-    void unsubscribeAlreadyUnsubscribedSellerExceptionTest() {
+    void unsubscribeAlreadyUnsubscribedInfluencerExceptionTest() {
         //given
         InfluencerSubscription influencerSubscription = InfluencerSubscription.builder()
             .id(1L)
@@ -193,8 +194,43 @@ public class InfluencerSubscribeTest {
     }
 
     @Test
+    @DisplayName("사용자가 구독 내역을 조회하면 인플루언서 이름과 프로필사진을 리스트로 반환한다.")
+    void getSubscribedInfluencerInfosTest() {
+        String authorization = "authorization";
+        String name = "아이유";
+        String profileImage = "https://xxxx.png";
+
+        SubscribedInfluencerRequestVo subscribedInfluencerRequestVo = SubscribedInfluencerRequestVo.builder()
+            .subscriberUuid(subscriberUuid)
+            .authorization(authorization)
+            .build();
+
+        List<InfluencerSubscription> influencerSubscriptions = List.of(
+            InfluencerSubscription.builder()
+                .influencerUuid(influencerUuid)
+                .build()
+        );
+
+        Mockito.when(influencerSubscriptionRepository.findBySubscriberUuidAndState(
+            subscriberUuid, SubscribeState.SUBSCRIBE
+        )).thenReturn(influencerSubscriptions);
+
+        Mockito.when(externalService.getInfluencerSummarise(
+            authorization, List.of(influencerUuid)
+        )).thenReturn(List.of(new InfluencerSummaryDto(name, profileImage)));
+
+        SubscribedInfluencerResponseDto subscribedInfluencerResponseDto =
+            influencerSubscriptionService.getSubscriptionInfos(subscribedInfluencerRequestVo);
+
+        assertNotNull(subscribedInfluencerResponseDto);
+        assertThat(subscribedInfluencerResponseDto.getInfluencerSummaries().size()).isEqualTo(1);
+        assertThat(subscribedInfluencerResponseDto.getInfluencerSummaries().get(0).getName()).isEqualTo(name);
+        assertThat(subscribedInfluencerResponseDto.getInfluencerSummaries().get(0).getProfileImage()).isEqualTo(profileImage);
+    }
+
+    @Test
     @DisplayName("사용자가 아무도 구독하지 않았다면 null을 반환한다.")
-    void getSubscribedSellerHandlesNoneSubscribeTest() {
+    void noneSubscribedTest() {
         //given
         SubscribedInfluencerRequestVo subscribedInfluencerRequestVo = SubscribedInfluencerRequestVo.builder()
             .subscriberUuid(subscriberUuid)
@@ -217,7 +253,7 @@ public class InfluencerSubscribeTest {
 
     @Test
     @DisplayName("구독한 인플루언서의 정보가 없으면 null을 반환한다.")
-    void getSubscribedSellerProfileImageNullSubscribeTest() {
+    void noneInfluencerInfoTest() {
         //given
         String authorization = "authorization";
         SubscribedInfluencerRequestVo subscribedInfluencerRequestVo = SubscribedInfluencerRequestVo.builder()

@@ -48,10 +48,10 @@ public class InfluencerSubscribeController {
     }
 
     @GetMapping
-    @Operation(summary = "인플루언서 구독 조회", description = "인플루언서 구독내역을 페이지로 조회합니다.")
+    @Operation(summary = "인플루언서 구독 조회", description = "인플루언서 구독내역을 조회합니다.")
     @ResponseBody
     public SuccessResponse<SubscribedInfluencerResponseVo> getSellerSubscribe(
-        @RequestHeader String authorization,
+        @RequestHeader(name = "Authorization") String authorization,
         @RequestHeader String uuid) {
         return new SuccessResponse<>(
             SubscribedInfluencerResponseDto.dtoToVo(
