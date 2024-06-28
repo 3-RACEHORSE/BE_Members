@@ -1,9 +1,11 @@
 package com.leeforgiveness.memberservice.subscribe;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 
@@ -14,10 +16,11 @@ import com.leeforgiveness.memberservice.subscribe.application.InfluencerSubscrip
 import com.leeforgiveness.memberservice.subscribe.domain.InfluencerSubscription;
 import com.leeforgiveness.memberservice.subscribe.dto.InfluencerSubscribeRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.InfluencerSummaryDto;
-import com.leeforgiveness.memberservice.subscribe.vo.SubscribedInfluencerRequestVo;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedInfluencerResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.InfluencerSubscriptionRepository;
 import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
+import com.leeforgiveness.memberservice.subscribe.vo.IsSubscribedRequestVo;
+import com.leeforgiveness.memberservice.subscribe.vo.SubscribedInfluencerRequestVo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -224,8 +227,11 @@ public class InfluencerSubscribeTest {
 
         assertNotNull(subscribedInfluencerResponseDto);
         assertThat(subscribedInfluencerResponseDto.getInfluencerSummaries().size()).isEqualTo(1);
-        assertThat(subscribedInfluencerResponseDto.getInfluencerSummaries().get(0).getName()).isEqualTo(name);
-        assertThat(subscribedInfluencerResponseDto.getInfluencerSummaries().get(0).getProfileImage()).isEqualTo(profileImage);
+        assertThat(
+            subscribedInfluencerResponseDto.getInfluencerSummaries().get(0).getName()).isEqualTo(
+            name);
+        assertThat(subscribedInfluencerResponseDto.getInfluencerSummaries().get(0)
+            .getProfileImage()).isEqualTo(profileImage);
     }
 
     @Test
@@ -283,5 +289,57 @@ public class InfluencerSubscribeTest {
 
         //then
         assertNull(subscribedInfluencerResponseDto);
+    }
+
+    @Test
+    @DisplayName("회원이 해당 인플루언서 구독했다면 true를 반환한다.")
+    void isSubscribedTrueTest() {
+        IsSubscribedRequestVo isSubscribedRequestVo = new IsSubscribedRequestVo(subscriberUuid,
+            influencerUuid);
+
+        Mockito.when(
+                influencerSubscriptionRepository.findBySubscriberUuidAndInfluencerUuid(subscriberUuid,
+                    influencerUuid))
+            .thenReturn(Optional.of(InfluencerSubscription.builder()
+                .state(SubscribeState.SUBSCRIBE)
+                .build()));
+
+        Boolean isSubscribed = influencerSubscriptionService.isSubscribed(isSubscribedRequestVo);
+
+        assertTrue(isSubscribed);
+    }
+
+    @Test
+    @DisplayName("회원이 해당 인플루언서를 구독 취소했다면 false를 반환한다.")
+    void isSubscribedFalseTest() {
+        IsSubscribedRequestVo isSubscribedRequestVo = new IsSubscribedRequestVo(subscriberUuid,
+            influencerUuid);
+
+        Mockito.when(
+                influencerSubscriptionRepository.findBySubscriberUuidAndInfluencerUuid(subscriberUuid,
+                    influencerUuid))
+            .thenReturn(Optional.of(InfluencerSubscription.builder()
+                    .state(SubscribeState.UNSUBSCRIBE)
+                .build()));
+
+        Boolean isSubscribed = influencerSubscriptionService.isSubscribed(isSubscribedRequestVo);
+
+        assertFalse(isSubscribed);
+    }
+
+    @Test
+    @DisplayName("회원이 해당 인플루언서를 구독한적 없다면 false를 반환한다.")
+    void isSubscribedNullTest() {
+        IsSubscribedRequestVo isSubscribedRequestVo = new IsSubscribedRequestVo(subscriberUuid,
+            influencerUuid);
+
+        Mockito.when(
+                influencerSubscriptionRepository.findBySubscriberUuidAndInfluencerUuid(subscriberUuid,
+                    influencerUuid))
+            .thenReturn(Optional.empty());
+
+        Boolean isSubscribed = influencerSubscriptionService.isSubscribed(isSubscribedRequestVo);
+
+        assertFalse(isSubscribed);
     }
 }
