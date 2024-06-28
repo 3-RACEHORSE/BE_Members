@@ -12,8 +12,10 @@ public class InfluencerSummaryDto {
     private String profileImage;
 
     public static InfluencerSummaryDto fromJson(JSONObject jsonObject) {
-        return new InfluencerSummaryDto(jsonObject.getString("name"),
-            jsonObject.getString("profileImage"));
+        return new InfluencerSummaryDto(
+            jsonObject.getString("name"),
+            jsonObject.getString("profileImage")
+        );
     }
 }
 

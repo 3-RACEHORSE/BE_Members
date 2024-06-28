@@ -1,6 +1,7 @@
 package com.leeforgiveness.memberservice.subscribe.application;
 
 import com.leeforgiveness.memberservice.subscribe.dto.InfluencerSubscribeRequestDto;
+import com.leeforgiveness.memberservice.subscribe.vo.IsSubscribedRequestVo;
 import com.leeforgiveness.memberservice.subscribe.vo.SubscribedInfluencerRequestVo;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedInfluencerResponseDto;
 
@@ -12,4 +13,6 @@ public interface InfluencerSubscriptionService {
 
     SubscribedInfluencerResponseDto getSubscriptionInfos(
         SubscribedInfluencerRequestVo subscribedInfluencerRequestVo);
+
+    Boolean isSubscribed(IsSubscribedRequestVo isSubscribedRequestVo);
 }
