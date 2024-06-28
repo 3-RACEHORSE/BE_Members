@@ -6,7 +6,7 @@ import java.util.Random;
 import java.util.UUID;
 
 public class GenerateRandom {
-    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final String CHARACTERS = "0123456789";
     private static final Random RANDOM = new Random();
 
     private static String string(int length) {
@@ -18,21 +18,11 @@ public class GenerateRandom {
         return sb.toString();
     }
 
-    public static String auctionUuid() {
-        return String.format("%s-%s",
-            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm")),
-            string(10));
-    }
-
     public static String subscriberUuid() {
         return UUID.randomUUID().toString();
     }
 
-    public static String sellerUuid() {
-        return UUID.randomUUID().toString();
-    }
-
-    public static String sellerHandle() {
-        return String.format("@user-%s", string(9));
+    public static String influencerUuid() {
+        return string(9);
     }
 }

@@ -4,39 +4,26 @@ import com.leeforgiveness.memberservice.auth.domain.Member;
 import com.leeforgiveness.memberservice.auth.domain.SnsInfo;
 import com.leeforgiveness.memberservice.auth.domain.UserReport;
 import com.leeforgiveness.memberservice.auth.dto.MemberDetailResponseDto;
-import com.leeforgiveness.memberservice.auth.dto.MemberInfoResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberReportRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberSnsLoginRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUpdateRequestDto;
-import com.leeforgiveness.memberservice.auth.dto.MemberUuidResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.MemberUuidsWithProfilesDto;
-import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailRequestDto;
-import com.leeforgiveness.memberservice.auth.dto.SellerMemberDetailResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.SnsMemberAddRequestDto;
 import com.leeforgiveness.memberservice.auth.dto.TokenResponseDto;
 import com.leeforgiveness.memberservice.auth.dto.UpdateProfileImageRequestDto;
 import com.leeforgiveness.memberservice.auth.infrastructure.MemberRepository;
 import com.leeforgiveness.memberservice.auth.infrastructure.RefreshTokenCertification;
 import com.leeforgiveness.memberservice.auth.infrastructure.SnsInfoRepository;
-
 import com.leeforgiveness.memberservice.auth.infrastructure.UserReportRepository;
 import com.leeforgiveness.memberservice.auth.vo.SearchForChatRoomVo;
 import com.leeforgiveness.memberservice.common.exception.CustomException;
 import com.leeforgiveness.memberservice.common.exception.ResponseStatus;
 import com.leeforgiveness.memberservice.common.kafka.KafkaProducerCluster;
-import com.leeforgiveness.memberservice.common.kafka.Topics;
 import com.leeforgiveness.memberservice.common.kafka.Topics.Constant;
 import com.leeforgiveness.memberservice.common.security.JwtTokenProvider;
-import com.leeforgiveness.memberservice.subscribe.infrastructure.SellerSubscriptionRepository;
-import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
+import com.leeforgiveness.memberservice.subscribe.infrastructure.InfluencerSubscriptionRepository;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,8 +31,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +42,7 @@ public class MemberServiceImpl implements MemberService {
     private final SnsInfoRepository snsInfoRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserReportRepository userReportRepository;
-    private final SellerSubscriptionRepository sellerSubscriptionRepository;
+    private final InfluencerSubscriptionRepository influencerSubscriptionRepository;
     private final RefreshTokenCertification refreshTokenCertification;
     private final KafkaProducerCluster producer;
 
@@ -205,7 +190,7 @@ public class MemberServiceImpl implements MemberService {
                     .memberUuid(memberUuid)
                     .profileImage(memberUpdateRequestDto.getProfileImage())
                     .build();
-            producer.sendMessage(Constant.CHANGE_PROFILE_IMAGE,updateProfileImageRequestDto);
+            producer.sendMessage(Constant.CHANGE_PROFILE_IMAGE, updateProfileImageRequestDto);
         }
 
         memberRepository.save(Member.builder()
@@ -237,37 +222,6 @@ public class MemberServiceImpl implements MemberService {
             .profileImage(member.getProfileImage())
             .build()
         );
-    }
-
-    //판매자 회원정보 조회
-    @Override
-    public SellerMemberDetailResponseDto findSellerMember(
-        SellerMemberDetailRequestDto sellerMemberDetailRequestDto) {
-        Member member = memberRepository.findByUuid(sellerMemberDetailRequestDto.getUuid())
-            .orElseThrow(() -> new CustomException(ResponseStatus.USER_NOT_FOUND));
-
-        boolean isSubscribed = false;
-        if (sellerMemberDetailRequestDto.getUuid() != null) {
-            if (sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
-                sellerMemberDetailRequestDto.getUuid(), member.getUuid()).isEmpty()) {
-                isSubscribed = false;
-            } else if (sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
-                    sellerMemberDetailRequestDto.getUuid(), member.getUuid())
-                .get().getState() == SubscribeState.SUBSCRIBE) {
-                isSubscribed = true;
-            } else if (sellerSubscriptionRepository.findBySubscriberUuidAndSellerUuid(
-                    sellerMemberDetailRequestDto.getUuid(), member.getUuid())
-                .get().getState() == SubscribeState.UNSUBSCRIBE) {
-                isSubscribed = false;
-
-            }
-        }
-
-        return SellerMemberDetailResponseDto.builder()
-            .name(member.getName())
-            .profileImage(member.getProfileImage())
-            .isSubscribed(isSubscribed)
-            .build();
     }
 
     //회원 신고
