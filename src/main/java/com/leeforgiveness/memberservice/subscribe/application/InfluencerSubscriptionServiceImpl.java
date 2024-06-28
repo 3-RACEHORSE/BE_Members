@@ -8,6 +8,7 @@ import com.leeforgiveness.memberservice.subscribe.dto.InfluencerSummaryDto;
 import com.leeforgiveness.memberservice.subscribe.dto.SubscribedInfluencerResponseDto;
 import com.leeforgiveness.memberservice.subscribe.infrastructure.InfluencerSubscriptionRepository;
 import com.leeforgiveness.memberservice.subscribe.state.SubscribeState;
+import com.leeforgiveness.memberservice.subscribe.vo.IsSubscribedRequestVo;
 import com.leeforgiveness.memberservice.subscribe.vo.SubscribedInfluencerRequestVo;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,16 +98,6 @@ public class InfluencerSubscriptionServiceImpl implements InfluencerSubscription
         }
     }
 
-    private Optional<InfluencerSubscription> getSubscription(
-        String subscriberUuid, String influencerUuid) {
-        try {
-            return influencerSubscriptionRepository.findBySubscriberUuidAndInfluencerUuid(
-                subscriberUuid, influencerUuid);
-        } catch (Exception e) {
-            throw new CustomException(ResponseStatus.DATABASE_READ_FAIL);
-        }
-    }
-
     //구독 조회
     @Override
     @Transactional(readOnly = true)
@@ -142,5 +133,25 @@ public class InfluencerSubscriptionServiceImpl implements InfluencerSubscription
         return SubscribedInfluencerResponseDto.builder()
             .influencerSummaries(influencerSummaryDtos)
             .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Boolean isSubscribed(IsSubscribedRequestVo isSubscribedRequestVo) {
+        Optional<InfluencerSubscription> subscriptionOptional = getSubscription(
+            isSubscribedRequestVo.getMemberUuid(), isSubscribedRequestVo.getInfluencerUuid());
+
+        return subscriptionOptional.isPresent()
+            && subscriptionOptional.get().getState() != SubscribeState.UNSUBSCRIBE;
+    }
+
+    private Optional<InfluencerSubscription> getSubscription(
+        String subscriberUuid, String influencerUuid) {
+        try {
+            return influencerSubscriptionRepository.findBySubscriberUuidAndInfluencerUuid(
+                subscriberUuid, influencerUuid);
+        } catch (Exception e) {
+            throw new CustomException(ResponseStatus.DATABASE_READ_FAIL);
+        }
     }
 }
