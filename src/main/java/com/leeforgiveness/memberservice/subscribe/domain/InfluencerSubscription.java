@@ -32,7 +32,7 @@ public class InfluencerSubscription extends BaseTimeEntity {
     private String subscriberUuid;
     @Column(name = "influencer_uuid", nullable = false, length = 10)
     private String influencerUuid;
-    @Column(name = "state", nullable = false, length = 10)
+    @Column(name = "state", nullable = false, length = 15)
     @ColumnDefault(value = "'SUBSCRIBE'")
     @Enumerated(EnumType.STRING)
     private SubscribeState state;
