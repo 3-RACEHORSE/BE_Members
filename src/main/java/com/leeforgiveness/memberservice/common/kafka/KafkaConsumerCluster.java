@@ -23,18 +23,30 @@ public class KafkaConsumerCluster {
     )
     public void consumeBatch(@Payload LinkedHashMap<String, Object> message,
         @Headers MessageHeaders messageHeaders) {
-        log.info("consumer: success >>> message: {}, headers: {}", message.toString(),
-            messageHeaders);
-        //message를 searchForChatRoom로 변환
-        SearchForChatRoomVo searchForChatRoomVo = SearchForChatRoomVo.builder()
-            .auctionUuid(message.get("auctionUuid").toString())
-            .memberUuids((List<String>) message.get("memberUuids"))
-            .adminUuid(message.get("adminUuid").toString())
-            .title(message.get("title").toString())
-            .thumbnail(message.get("thumbnail").toString())
-            .build();
-        log.info("auctionUuid : {}", searchForChatRoomVo.getAuctionUuid());
-        log.info("memberUuids : {}", searchForChatRoomVo.getMemberUuids());
-        memberService.searchProfileImage(searchForChatRoomVo);
+        log.info(">>>>> consume send-to-member-for-create-chatroom-topic success");
+
+        Object auctionUuidObj = message.get("auctionUuid");
+        Object memberUuidsObj = message.get("memberUuids");
+        Object adminUuidObj = message.get("adminUuid");
+        Object titleObj = message.get("title");
+        Object thumbnailObj = message.get("thumbnail");
+
+        if (auctionUuidObj != null && memberUuidsObj != null && adminUuidObj != null && titleObj != null && thumbnailObj != null) {
+            SearchForChatRoomVo searchForChatRoomVo = SearchForChatRoomVo.builder()
+                .auctionUuid(auctionUuidObj.toString())
+                .memberUuids((List<String>) memberUuidsObj)
+                .adminUuid(adminUuidObj.toString())
+                .title(titleObj.toString())
+                .thumbnail(thumbnailObj.toString())
+                .build();
+
+            memberService.searchProfileImage(searchForChatRoomVo);
+        }
+
+    }
+
+    @KafkaListener(topics = Constant.INITIAL_AUCTION)
+    public void consumeNewAuction(@Payload LinkedHashMap<String, Object> message) {
+
     }
 }
