@@ -1,16 +1,23 @@
 package com.leeforgiveness.memberservice.subscribe;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.leeforgiveness.memberservice.common.GenerateRandom;
 import com.leeforgiveness.memberservice.common.exception.CustomException;
+import com.leeforgiveness.memberservice.common.kafka.EventType;
+import com.leeforgiveness.memberservice.common.kafka.KafkaProducerCluster;
+import com.leeforgiveness.memberservice.common.kafka.Topics.Constant;
+import com.leeforgiveness.memberservice.common.kafka.dto.AlarmDto;
+import com.leeforgiveness.memberservice.common.kafka.dto.SubscriberFilterVo;
 import com.leeforgiveness.memberservice.subscribe.application.ExternalService;
 import com.leeforgiveness.memberservice.subscribe.application.InfluencerSubscriptionServiceImpl;
 import com.leeforgiveness.memberservice.subscribe.domain.InfluencerSubscription;
@@ -27,6 +34,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 public class InfluencerSubscribeTest {
@@ -35,6 +43,7 @@ public class InfluencerSubscribeTest {
         InfluencerSubscriptionRepository.class);
     private ExternalService externalService = Mockito.mock(ExternalService.class);
     private InfluencerSubscriptionServiceImpl influencerSubscriptionService;
+    private KafkaProducerCluster kafkaProducer = Mockito.mock(KafkaProducerCluster.class);
 
     private String subscriberUuid;
     private String influencerUuid;
@@ -42,7 +51,7 @@ public class InfluencerSubscribeTest {
     @BeforeEach
     public void setUp() {
         influencerSubscriptionService = new InfluencerSubscriptionServiceImpl(
-            influencerSubscriptionRepository, externalService);
+            influencerSubscriptionRepository, externalService, kafkaProducer);
 
         subscriberUuid = GenerateRandom.subscriberUuid();
         influencerUuid = GenerateRandom.influencerUuid();
@@ -341,5 +350,40 @@ public class InfluencerSubscribeTest {
         Boolean isSubscribed = influencerSubscriptionService.isSubscribed(isSubscribedRequestVo);
 
         assertFalse(isSubscribed);
+    }
+
+    @Test
+    @DisplayName("정상적인 initial-auction-topic 메시지를 받았을때 구독자가 있으면 알림 메시지를 보낸다")
+    void SendNewAuctionAlarmToSubscriberAtNormalMessageTest() {
+        SubscriberFilterVo subscriberFilterVo = SubscriberFilterVo.builder()
+            .auctionUuid(GenerateRandom.auctionUuid())
+            .influencerUuid(influencerUuid)
+            .influencerName("아이유")
+            .build();
+
+        Mockito.when(influencerSubscriptionRepository.findByInfluencerUuidAndState(influencerUuid, SubscribeState.SUBSCRIBE))
+            .thenReturn(List.of(
+                InfluencerSubscription.builder()
+                    .subscriberUuid(subscriberUuid)
+                    .build()
+            ));
+
+        AlarmDto alarmDto = AlarmDto.builder()
+            .uuid(GenerateRandom.auctionUuid())
+            .receiverUuids(List.of(subscriberUuid))
+            .eventType(EventType.AUCTION_POST_DETAIL.getType())
+            .message("새글 알림")
+            .build();
+
+        kafkaProducer.sendMessage(Constant.ALARM, alarmDto);
+
+
+        ArgumentCaptor<String> topicCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Object> messageCaptor = ArgumentCaptor.forClass(Object.class);
+
+        verify(kafkaProducer, times(1)).sendMessage(topicCaptor.capture(), messageCaptor.capture());
+
+        assertEquals(Constant.ALARM, topicCaptor.getValue());
+        assertEquals(alarmDto, messageCaptor.getValue());
     }
 }
