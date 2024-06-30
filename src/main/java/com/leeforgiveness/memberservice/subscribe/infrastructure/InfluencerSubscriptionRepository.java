@@ -14,4 +14,6 @@ public interface InfluencerSubscriptionRepository extends
 
     List<InfluencerSubscription> findBySubscriberUuidAndState(String subscriberUuid,
         SubscribeState state);
+
+    List<InfluencerSubscription> findByInfluencerUuidAndState(String influencerUuid, SubscribeState state);
 }

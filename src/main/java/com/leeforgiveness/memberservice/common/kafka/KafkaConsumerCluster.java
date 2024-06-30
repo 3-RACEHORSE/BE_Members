@@ -1,6 +1,9 @@
 package com.leeforgiveness.memberservice.common.kafka;
 import com.leeforgiveness.memberservice.auth.application.MemberService;
 import com.leeforgiveness.memberservice.auth.vo.SearchForChatRoomVo;
+import com.leeforgiveness.memberservice.common.kafka.Topics.Constant;
+import com.leeforgiveness.memberservice.common.kafka.dto.SubscriberFilterVo;
+import com.leeforgiveness.memberservice.subscribe.application.InfluencerSubscriptionService;
 import java.util.LinkedHashMap;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -17,23 +20,48 @@ import org.springframework.stereotype.Component;
 public class KafkaConsumerCluster {
 
     private final MemberService memberService;
+    private final InfluencerSubscriptionService influencerSubscriptionService;
 
-    @KafkaListener(topics = "send-to-member-for-create-chatroom-topic"
+    @KafkaListener(topics = Constant.SEND_TO_MEMBER_FOR_CREATE_CHATROOM_TOPIC
     )
     public void consumeBatch(@Payload LinkedHashMap<String, Object> message,
         @Headers MessageHeaders messageHeaders) {
-        log.info("consumer: success >>> message: {}, headers: {}", message.toString(),
-            messageHeaders);
-        //message를 searchForChatRoom로 변환
-        SearchForChatRoomVo searchForChatRoomVo = SearchForChatRoomVo.builder()
-            .auctionUuid(message.get("auctionUuid").toString())
-            .memberUuids((List<String>) message.get("memberUuids"))
-            .adminUuid(message.get("adminUuid").toString())
-            .title(message.get("title").toString())
-            .thumbnail(message.get("thumbnail").toString())
-            .build();
-        log.info("auctionUuid : {}", searchForChatRoomVo.getAuctionUuid());
-        log.info("memberUuids : {}", searchForChatRoomVo.getMemberUuids());
-        memberService.searchProfileImage(searchForChatRoomVo);
+        log.info(">>>>> consume send-to-member-for-create-chatroom-topic success");
+
+        Object auctionUuidObj = message.get("auctionUuid");
+        Object memberUuidsObj = message.get("memberUuids");
+        Object adminUuidObj = message.get("adminUuid");
+        Object titleObj = message.get("title");
+        Object thumbnailObj = message.get("thumbnail");
+
+        if (auctionUuidObj != null && memberUuidsObj != null && adminUuidObj != null && titleObj != null && thumbnailObj != null) {
+            SearchForChatRoomVo searchForChatRoomVo = SearchForChatRoomVo.builder()
+                .auctionUuid(auctionUuidObj.toString())
+                .memberUuids((List<String>) memberUuidsObj)
+                .adminUuid(adminUuidObj.toString())
+                .title(titleObj.toString())
+                .thumbnail(thumbnailObj.toString())
+                .build();
+
+            memberService.searchProfileImage(searchForChatRoomVo);
+        }
+
+    }
+
+    @KafkaListener(topics = Constant.INITIAL_AUCTION)
+    public void consumeNewAuction(@Payload LinkedHashMap<String, Object> message) {
+        Object auctionUuidObj = message.get("auctionUuid");
+        Object influencerUuidObj = message.get("influencerUuid");
+        Object influencerNameObj = message.get("influencerName");
+
+        if (auctionUuidObj != null && influencerUuidObj != null && influencerNameObj != null) {
+            influencerSubscriptionService.sendNewAuctionAlarmToSubscriber(
+                SubscriberFilterVo.builder()
+                    .auctionUuid(auctionUuidObj.toString())
+                    .influencerUuid(influencerUuidObj.toString())
+                    .influencerName(influencerNameObj.toString())
+                    .build()
+            );
+        }
     }
 }
