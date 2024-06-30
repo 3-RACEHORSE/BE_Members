@@ -1,11 +1,10 @@
 package com.leeforgiveness.memberservice.common;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Random;
 import java.util.UUID;
 
 public class GenerateRandom {
+
     private static final String CHARACTERS = "0123456789";
     private static final Random RANDOM = new Random();
 
@@ -16,6 +15,10 @@ public class GenerateRandom {
             sb.append(CHARACTERS.charAt(index));
         }
         return sb.toString();
+    }
+
+    public static String auctionUuid() {
+        return "auction-" + string(9);
     }
 
     public static String subscriberUuid() {
