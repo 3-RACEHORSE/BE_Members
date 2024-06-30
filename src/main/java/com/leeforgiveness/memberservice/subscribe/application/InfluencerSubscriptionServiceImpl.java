@@ -2,6 +2,9 @@ package com.leeforgiveness.memberservice.subscribe.application;
 
 import com.leeforgiveness.memberservice.common.exception.CustomException;
 import com.leeforgiveness.memberservice.common.exception.ResponseStatus;
+import com.leeforgiveness.memberservice.common.kafka.EventType;
+import com.leeforgiveness.memberservice.common.kafka.dto.AlarmDto;
+import com.leeforgiveness.memberservice.common.kafka.dto.SubscriberFilterVo;
 import com.leeforgiveness.memberservice.subscribe.domain.InfluencerSubscription;
 import com.leeforgiveness.memberservice.subscribe.dto.InfluencerSubscribeRequestDto;
 import com.leeforgiveness.memberservice.subscribe.dto.InfluencerSummaryDto;
@@ -153,5 +156,25 @@ public class InfluencerSubscriptionServiceImpl implements InfluencerSubscription
         } catch (Exception e) {
             throw new CustomException(ResponseStatus.DATABASE_READ_FAIL);
         }
+    }
+
+    @Override
+    public AlarmDto subscriberFiltering(SubscriberFilterVo subscriberFilterVo) {
+        List<InfluencerSubscription> influencerSubscriptions = influencerSubscriptionRepository.findByInfluencerUuidAndState(
+            subscriberFilterVo.getInfluencerUuid(), SubscribeState.SUBSCRIBE);
+
+        if (influencerSubscriptions.isEmpty()) {
+            return null;
+        }
+
+        List<String> receiverUuids = influencerSubscriptions.stream()
+            .map(InfluencerSubscription::getSubscriberUuid).toList();
+
+        return AlarmDto.builder()
+            .uuid(subscriberFilterVo.getAuctionUuid())
+            .receiverUuids(receiverUuids)
+            .eventType(EventType.AUCTION_POST_DETAIL.getType())
+            .message(String.format("%s님의 새로운 경매가 올라왔어요!", subscriberFilterVo.getInfluencerName()))
+            .build();
     }
 }
