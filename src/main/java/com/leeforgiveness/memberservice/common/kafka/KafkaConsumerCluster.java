@@ -1,6 +1,7 @@
 package com.leeforgiveness.memberservice.common.kafka;
 import com.leeforgiveness.memberservice.auth.application.MemberService;
 import com.leeforgiveness.memberservice.auth.vo.SearchForChatRoomVo;
+import com.leeforgiveness.memberservice.common.kafka.Topics.Constant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class KafkaConsumerCluster {
 
     private final MemberService memberService;
 
-    @KafkaListener(topics = "send-to-member-for-create-chatroom-topic"
+    @KafkaListener(topics = Constant.SEND_TO_MEMBER_FOR_CREATE_CHATROOM_TOPIC
     )
     public void consumeBatch(@Payload LinkedHashMap<String, Object> message,
         @Headers MessageHeaders messageHeaders) {
