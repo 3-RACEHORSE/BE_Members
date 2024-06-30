@@ -10,6 +10,7 @@ public enum Topics {
     SEND_TO_CHAT(Constant.SEND_TO_CHAT),
     SEND_TO_MEMBER_FOR_CREATE_CHATROOM_TOPIC(Constant.SEND_TO_MEMBER_FOR_CREATE_CHATROOM_TOPIC),
     INITIAL_AUCTION(Constant.INITIAL_AUCTION),
+    ALARM(Constant.ALARM)
     ;
 
     public static class Constant {
@@ -20,6 +21,7 @@ public enum Topics {
         public static final String SEND_TO_MEMBER_FOR_CREATE_CHATROOM_TOPIC
             = "send-to-member-for-create-chatroom-topic";
         public static final String INITIAL_AUCTION = "initial-auction-topic";
+        public static final String ALARM ="alarm-topic";
     }
 
     private final String topic;
