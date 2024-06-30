@@ -18,5 +18,5 @@ public interface InfluencerSubscriptionService {
 
     Boolean isSubscribed(IsSubscribedRequestVo isSubscribedRequestVo);
 
-    AlarmDto subscriberFiltering(SubscriberFilterVo subscriberFilterVo);
+    void sendNewAuctionAlarmToSubscriber(SubscriberFilterVo subscriberFilterVo);
 }

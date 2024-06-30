@@ -3,6 +3,8 @@ package com.leeforgiveness.memberservice.subscribe.application;
 import com.leeforgiveness.memberservice.common.exception.CustomException;
 import com.leeforgiveness.memberservice.common.exception.ResponseStatus;
 import com.leeforgiveness.memberservice.common.kafka.EventType;
+import com.leeforgiveness.memberservice.common.kafka.KafkaProducerCluster;
+import com.leeforgiveness.memberservice.common.kafka.Topics.Constant;
 import com.leeforgiveness.memberservice.common.kafka.dto.AlarmDto;
 import com.leeforgiveness.memberservice.common.kafka.dto.SubscriberFilterVo;
 import com.leeforgiveness.memberservice.subscribe.domain.InfluencerSubscription;
@@ -28,6 +30,7 @@ public class InfluencerSubscriptionServiceImpl implements InfluencerSubscription
 
     private final InfluencerSubscriptionRepository influencerSubscriptionRepository;
     private final ExternalService externalService;
+    private final KafkaProducerCluster kafkaProducer;
 
     //구독
     @Override
@@ -159,22 +162,23 @@ public class InfluencerSubscriptionServiceImpl implements InfluencerSubscription
     }
 
     @Override
-    public AlarmDto subscriberFiltering(SubscriberFilterVo subscriberFilterVo) {
+    public void sendNewAuctionAlarmToSubscriber(SubscriberFilterVo subscriberFilterVo) {
         List<InfluencerSubscription> influencerSubscriptions = influencerSubscriptionRepository.findByInfluencerUuidAndState(
             subscriberFilterVo.getInfluencerUuid(), SubscribeState.SUBSCRIBE);
 
         if (influencerSubscriptions.isEmpty()) {
-            return null;
+            log.info(">>>> sendNewAuctionAlarmToSubscriber: no subscriber");
+            return;
         }
 
         List<String> receiverUuids = influencerSubscriptions.stream()
             .map(InfluencerSubscription::getSubscriberUuid).toList();
 
-        return AlarmDto.builder()
+        kafkaProducer.sendMessage(Constant.ALARM, AlarmDto.builder()
             .uuid(subscriberFilterVo.getAuctionUuid())
             .receiverUuids(receiverUuids)
             .eventType(EventType.AUCTION_POST_DETAIL.getType())
             .message(String.format("%s님의 새로운 경매가 올라왔어요!", subscriberFilterVo.getInfluencerName()))
-            .build();
+            .build());
     }
 }
