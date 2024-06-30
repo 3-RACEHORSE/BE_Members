@@ -9,6 +9,7 @@ public enum Topics {
     MEMBER_SERVICE(Constant.MEMBER_SERVICE),
     SEND_TO_CHAT(Constant.SEND_TO_CHAT),
     SEND_TO_MEMBER_FOR_CREATE_CHATROOM_TOPIC(Constant.SEND_TO_MEMBER_FOR_CREATE_CHATROOM_TOPIC),
+    INITIAL_AUCTION(Constant.INITIAL_AUCTION),
     ;
 
     public static class Constant {
@@ -18,6 +19,7 @@ public enum Topics {
         public static final String CHANGE_PROFILE_IMAGE = "change-profile-image-topic";
         public static final String SEND_TO_MEMBER_FOR_CREATE_CHATROOM_TOPIC
             = "send-to-member-for-create-chatroom-topic";
+        public static final String INITIAL_AUCTION = "initial-auction-topic";
     }
 
     private final String topic;
