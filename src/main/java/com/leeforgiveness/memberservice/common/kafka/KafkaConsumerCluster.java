@@ -2,6 +2,8 @@ package com.leeforgiveness.memberservice.common.kafka;
 import com.leeforgiveness.memberservice.auth.application.MemberService;
 import com.leeforgiveness.memberservice.auth.vo.SearchForChatRoomVo;
 import com.leeforgiveness.memberservice.common.kafka.Topics.Constant;
+import com.leeforgiveness.memberservice.common.kafka.dto.SubscriberFilterVo;
+import com.leeforgiveness.memberservice.subscribe.application.InfluencerSubscriptionService;
 import java.util.LinkedHashMap;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Component;
 public class KafkaConsumerCluster {
 
     private final MemberService memberService;
+    private final InfluencerSubscriptionService influencerSubscriptionService;
 
     @KafkaListener(topics = Constant.SEND_TO_MEMBER_FOR_CREATE_CHATROOM_TOPIC
     )
@@ -47,6 +50,18 @@ public class KafkaConsumerCluster {
 
     @KafkaListener(topics = Constant.INITIAL_AUCTION)
     public void consumeNewAuction(@Payload LinkedHashMap<String, Object> message) {
+        Object auctionUuidObj = message.get("auctionUuid");
+        Object influencerUuidObj = message.get("influencerUuid");
+        Object influencerNameObj = message.get("influencerName");
 
+        if (auctionUuidObj != null && influencerUuidObj != null && influencerNameObj != null) {
+            influencerSubscriptionService.sendNewAuctionAlarmToSubscriber(
+                SubscriberFilterVo.builder()
+                    .auctionUuid(auctionUuidObj.toString())
+                    .influencerUuid(influencerUuidObj.toString())
+                    .influencerName(influencerNameObj.toString())
+                    .build()
+            );
+        }
     }
 }
